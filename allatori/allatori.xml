@@ -4,7 +4,7 @@
     </input>
 
     <keep-names>
-        <class template="class cn.yistars.template.BingTemplate(**)" />
+        <class template="class cn.yistars.dungeon.BingDungeon(**)" />
     </keep-names>
 
     <ignore-classes>

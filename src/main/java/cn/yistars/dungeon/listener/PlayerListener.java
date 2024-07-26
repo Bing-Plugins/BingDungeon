@@ -1,4 +1,4 @@
-package cn.yistars.template.listener;
+package cn.yistars.dungeon.listener;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

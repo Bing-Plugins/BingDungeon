@@ -1,13 +1,13 @@
-package cn.yistars.template;
+package cn.yistars.dungeon;
 
-import cn.yistars.template.command.MainCommand;
-import cn.yistars.template.config.ConfigAccessor;
-import cn.yistars.template.config.ConfigManager;
-import cn.yistars.template.listener.PlayerListener;
+import cn.yistars.dungeon.command.MainCommand;
+import cn.yistars.dungeon.config.ConfigAccessor;
+import cn.yistars.dungeon.config.ConfigManager;
+import cn.yistars.dungeon.listener.PlayerListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class BingTemplate extends JavaPlugin {
-    public static BingTemplate instance;
+public class BingDungeon extends JavaPlugin {
+    public static BingDungeon instance;
     public final ConfigAccessor Lang = new ConfigAccessor(this, "Lang.yml");
 
     @Override
@@ -18,7 +18,7 @@ public class BingTemplate extends JavaPlugin {
 
         this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 
-        this.getCommand("BingTemplate").setExecutor(new MainCommand());
+        this.getCommand("BingDungeon").setExecutor(new MainCommand());
 
         this.getLogger().info("Enabled successfully.");
     }

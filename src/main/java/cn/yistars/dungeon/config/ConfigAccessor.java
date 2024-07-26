@@ -1,4 +1,4 @@
-package cn.yistars.template.config;
+package cn.yistars.dungeon.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
