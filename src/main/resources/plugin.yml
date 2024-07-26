@@ -1,0 +1,13 @@
+name: ${project.name}
+version: '${project.version}'
+main: ${project.groupId}.${project.artifactId}
+author: Bing_Yanchi
+api-version: 1.19
+
+commands:
+  ${project.name}:
+    description: ${project.name}
+
+permissions:
+  ${project.name}.admin:
+    default: op

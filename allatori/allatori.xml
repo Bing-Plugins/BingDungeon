@@ -1,0 +1,52 @@
+<config>
+    <input>
+        <jar in="${project.build.finalName}.jar" out="${project.build.finalName}-stable.jar"/>
+    </input>
+
+    <keep-names>
+        <class template="class cn.yistars.template.BingTemplate(**)" />
+    </keep-names>
+
+    <ignore-classes>
+        <class template="class cn.yistars.zxing.**(**)" />
+        <class template="class cn.hutool.**(**)" />
+
+        <class template="class com.**(**)" />
+        <class template="class google.**(**)" />
+        <class template="class org.**(**)" />
+    </ignore-classes>
+
+    <!-- String encryption 字符串加密-->
+    <property name="string-encryption" value="enable"/>
+    <property name="string-encryption-version" value="v3"/>
+    <property name="string-encryption-ignored-strings" value="spigotmc-patterns.txt"/>
+    <property name="string-encryption-ignored-strings" value="builtbybit-patterns.txt"/>
+
+    <!-- Control flow obfuscation 控制流混淆 -->
+    <property name="control-flow-obfuscation" value="enable"/>
+    <property name="extensive-flow-obfuscation" value="maximum"/>
+
+    <!-- Renaming 重命名-->
+    <property name="skip-renaming" value="enable"/>
+    <property name="local-variables-naming" value="remove"/>
+    <property name="classes-naming" value="keep-$-sign"/>
+
+    <!-- Other -->
+    <!--
+    <property name="line-numbers" value="keep"/>
+    -->
+
+    <property name="synthetize-methods" value="disable"/>
+    <property name="synthetize-fields" value="disable"/>
+
+    <property name="output-jar-compression-level" value="9"/>
+
+    <classpath basedir="../library-jars">
+        <jar name="*.jar"/>
+        <!--
+        <jar name="spigot/*.jar"/>
+        -->
+    </classpath>
+
+    <property name="log-file" value="log.xml"/>
+</config>

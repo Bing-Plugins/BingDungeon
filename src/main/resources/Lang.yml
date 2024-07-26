@@ -1,0 +1,6 @@
+# 帮助
+main-get-help: "查看帮助使用 /BingTemplate help"
+main-command-help: |-
+  &e/BingTemplate help &7- &f查看帮助
+  &e/BingTemplate reload &7- &f重载配置
+reload-success: "&a成功重载配置文件"
