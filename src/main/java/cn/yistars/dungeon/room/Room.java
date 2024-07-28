@@ -17,11 +17,4 @@ public class Room {
     public void setPosition(int x, int y) {
         this.rectangle.setLocation(x, y);
     }
-
-    public boolean overlaps(Room other) {
-        return !(this.rectangle.x + this.rectangle.width <= other.rectangle.x ||
-                other.rectangle.x + other.rectangle.width <= this.rectangle.x ||
-                this.rectangle.y + this.rectangle.height <= other.rectangle.y ||
-                other.rectangle.y + other.rectangle.height <= this.rectangle.y);
-    }
 }
