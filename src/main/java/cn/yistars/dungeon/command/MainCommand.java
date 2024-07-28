@@ -1,6 +1,7 @@
 package cn.yistars.dungeon.command;
 
 import cn.yistars.dungeon.BingDungeon;
+import cn.yistars.dungeon.arena.ArenaManager;
 import cn.yistars.dungeon.config.ConfigManager;
 import cn.yistars.dungeon.config.LangManager;
 import org.bukkit.command.Command;
@@ -44,6 +45,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
                 return true;
             case "debug":
+                ArenaManager.createArena();
                 return true;
             default:
                 return false;

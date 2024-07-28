@@ -1,0 +1,27 @@
+# 地图名称
+slime-world:
+  id: "Dungeon"
+  difficulty: "normal"
+  spawn-x: 0
+  spawn-y: 80
+  spawn-z: 0
+  spawn-yaw: 0
+  allow-animals: false
+  allow-monsters: false
+  dragon-battle: false
+  pvp: false
+  environment: "normal"
+  world-type: "DEFAULT"
+  default-biome: "minecraft:plains"
+# 镜像世界 ID
+mirror-world-id: "DungeonMirror-%timestamp%"
+
+# 地图数据库
+slime-database:
+  host: mysql.ipv4.yistars.net
+  port: 3306
+  username: GameMap
+  password: 8RjhGeW2w57GYCEP
+  database: gamemap
+  use-ssl: false
+  sql-url: jdbc:mysql://{host}:{port}/{database}?autoReconnect=true&allowMultiQueries=true&useSSL={usessl}
