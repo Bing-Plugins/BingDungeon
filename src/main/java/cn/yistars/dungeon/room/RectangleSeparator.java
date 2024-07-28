@@ -4,24 +4,24 @@ import java.awt.*;
 import java.util.List;
 
 public class RectangleSeparator {
-    private final List<Rectangle> rectangles;
+    private final List<Room> rooms;
 
-    public RectangleSeparator(List<Rectangle> rectangles) {
-        this.rectangles = rectangles;
+    public RectangleSeparator(List<Room> rooms) {
+        this.rooms = rooms;
     }
 
     public void separate() {
         boolean anyOverlap;
         do {
             anyOverlap = false;
-            for (int i = 0; i < rectangles.size(); i++) {
+            for (int i = 0; i < rooms.size(); i++) {
                 Point force = new Point(0, 0);
                 int overlapCounter = 0;
-                for (int j = 0; j < rectangles.size(); j++) {
+                for (int j = 0; j < rooms.size(); j++) {
                     if (i == j) continue;
-                    if (!isOverlapped(rectangles.get(i), rectangles.get(j))) continue;
-                    force.x += rectangles.get(j).x - rectangles.get(i).x;
-                    force.y += rectangles.get(j).y - rectangles.get(i).y;
+                    if (!isOverlapped(rooms.get(i), rooms.get(j))) continue;
+                    force.x += rooms.get(j).getRectangle().x - rooms.get(i).getRectangle().x;
+                    force.y += rooms.get(j).getRectangle().y - rooms.get(i).getRectangle().y;
                     overlapCounter++;
                 }
                 if (overlapCounter == 0) continue;
@@ -29,18 +29,17 @@ public class RectangleSeparator {
                 force.y /= overlapCounter;
                 force.x *= -1;
                 force.y *= -1;
-                moveRectangle(rectangles.get(i), force);
+                moveRectangle(rooms.get(i), force);
                 anyOverlap = true;
             }
         } while (anyOverlap);
     }
 
-    private boolean isOverlapped(Rectangle r1, Rectangle r2) {
-        return r1.intersects(r2);
+    private boolean isOverlapped(Room r1, Room r2) {
+        return r1.getRectangle().intersects(r2.getRectangle());
     }
 
-    private void moveRectangle(Rectangle rectangle, Point move) {
-        rectangle.x += move.x;
-        rectangle.y += move.y;
+    private void moveRectangle(Room room, Point move) {
+        room.setPosition(room.getRectangle().x + move.x, room.getRectangle().y + move.y);
     }
 }
