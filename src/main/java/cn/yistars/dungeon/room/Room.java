@@ -50,7 +50,7 @@ public class Room {
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(world)) {
             Operation operation = new ClipboardHolder(clipboard)
                     .createPaste(editSession)
-                    .to(BlockVector3.at(rectangle.x, 100, rectangle.y))
+                    .to(BlockVector3.at(rectangle.x * BingDungeon.instance.getConfig().getInt("unit-size"), 100, rectangle.y * BingDungeon.instance.getConfig().getInt("unit-size")))
                     .build();
             Operations.complete(operation);
         }
