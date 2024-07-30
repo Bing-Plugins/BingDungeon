@@ -20,12 +20,13 @@ public class Arena {
     public Arena() {
         initWorld();
         initRoom();
+        spawnRoom();
     }
 
     private void initWorld() {
         SlimeWorld mirrorWorld = ArenaManager.slimeWorld.clone(
-                BingDungeon.instance.getConfig().getString("mirror-world-id", "DungeonMirror-{timestamp}")
-                        .replace("{timestamp}", String.valueOf(System.currentTimeMillis()))
+                BingDungeon.instance.getConfig().getString("mirror-world-id", "DungeonMirror-%timestamp%")
+                        .replace("%timestamp%", String.valueOf(System.currentTimeMillis()))
         );
         SlimeWorld mirror = ArenaManager.asp.loadWorld(mirrorWorld, true);
 
@@ -33,6 +34,12 @@ public class Arena {
     }
 
     private void initRoom() {
+        for (String key : BingDungeon.instance.Rooms.getConfig().getKeys(false)) {
+            rooms.add(new Room(key));
+        }
+    }
+
+    private void spawnRoom() {
         // 随机在圆内绘制点位
         Random random = new Random();
         for (Room room : rooms) {

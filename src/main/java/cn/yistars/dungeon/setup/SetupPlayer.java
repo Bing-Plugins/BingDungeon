@@ -86,6 +86,7 @@ public class SetupPlayer {
     public void cancel() {
         SetupManager.setupPlayers.remove(player.getUniqueId());
         for (ItemStack itemStack : player.getInventory().getContents()) {
+            if (itemStack == null) continue;
             if (SetupManager.isSetupStick(itemStack)) {
                 player.getInventory().remove(itemStack);
             }
@@ -149,6 +150,7 @@ public class SetupPlayer {
         BingDungeon.instance.Rooms.getConfig().set(id + ".width", region.getWidth() / BingDungeon.instance.getConfig().getInt("unit-size"));
         BingDungeon.instance.Rooms.getConfig().set(id + ".length", region.getLength() / BingDungeon.instance.getConfig().getInt("unit-size"));
         BingDungeon.instance.Rooms.getConfig().set(id + ".unit", BingDungeon.instance.getConfig().getInt("unit-size"));
+        BingDungeon.instance.Rooms.getConfig().set(id + ".type", roomType.toString());
         BingDungeon.instance.Rooms.saveConfig();
 
         // 保存提示
