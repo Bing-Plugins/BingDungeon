@@ -1,6 +1,54 @@
+# 配置
+setup-tip: |-
+  
+   %id-status%
+   %type-status%
+   %first-location-status%
+   %second-location-status%
+  
+   %complete-button%
+
+setup-status-success: "&a"
+setup-status-unset: "&7"
+setup-status-warn: "&e"
+
+setup-unset: "&o未设置"
+
+setup-id-status: "ID: %id%"
+setup-type-status: "类型: %type%"
+setup-first-location-status: "第一个位置: %first-location%"
+setup-second-location-status: "第二个位置: %second-location%"
+
+setup-location-format: "(%world%, %x%, %y%, %z%)"
+setup-location-hover-size: "长宽高: %length%&f*%width%&f*%height%"
+setup-location-hover-not-same-world: "&e两个坐标点不在同一世界"
+setup-location-hover-not-allow-size: "&e长或宽不属于 %unit-size% 的倍数"
+
+setup-complete-button-split: " &f| "
+setup-save-button: "&l保存配置"
+setup-cancel-button: "&c&l取消配置"
+
+setup-not-enable-setup: "&c当前服务器未启用配置模式"
+setup-player-not-in-setup: "&c你当前未在配置模式, 请先使用 /bingdungeon setup"
+setup-cancel: "&c你现在退出了配置模式"
+setup-location-not-in-same-world: "&c两个位置必须在同一个世界"
+setup-room-unit-size-incorrect: "&c房间尺寸不正确"
+setup-still-unfinished-projects: "&c当前还有未完成的项目"
+
+setup-save-success-msg: |-
+  &f
+  &f成功保存配置: &e%id% &f(&a&l再来一个&f)
+  &f
+setup-cancel-msg: |-
+  
+  &c你退出了配置模式
+  &f
+
+need-player: "&c只有玩家才能执行此命令"
+
 # 帮助
-main-get-help: "查看帮助使用 /BingTemplate help"
+main-get-help: "查看帮助使用 /BingDungeon help"
 main-command-help: |-
-  &e/BingTemplate help &7- &f查看帮助
-  &e/BingTemplate reload &7- &f重载配置
+  &e/BingDungeon help &7- &f查看帮助
+  &e/BingDungeon reload &7- &f重载配置
 reload-success: "&a成功重载配置文件"

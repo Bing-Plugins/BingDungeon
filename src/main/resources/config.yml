@@ -1,3 +1,9 @@
+# 配置模式
+setup-mode: false
+
+# 房间单位，需要整除此数
+unit-size: 7
+
 # 地图名称
 slime-world:
   id: "Dungeon"
