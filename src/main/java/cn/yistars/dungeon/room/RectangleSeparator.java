@@ -20,8 +20,8 @@ public class RectangleSeparator {
                 for (int j = 0; j < rooms.size(); j++) {
                     if (i == j) continue;
                     if (!isOverlapped(rooms.get(i), rooms.get(j))) continue;
-                    force.x += rooms.get(j).getRectangle().x - rooms.get(i).getRectangle().x;
-                    force.y += rooms.get(j).getRectangle().y - rooms.get(i).getRectangle().y;
+                    force.x += rooms.get(j).getMarginRectangle().x - rooms.get(i).getMarginRectangle().x;
+                    force.y += rooms.get(j).getMarginRectangle().y - rooms.get(i).getMarginRectangle().y;
                     overlapCounter++;
                 }
                 if (overlapCounter == 0) continue;
@@ -36,10 +36,10 @@ public class RectangleSeparator {
     }
 
     private boolean isOverlapped(Room r1, Room r2) {
-        return r1.getRectangle().intersects(r2.getRectangle());
+        return r1.getMarginRectangle().intersects(r2.getMarginRectangle());
     }
 
     private void moveRectangle(Room room, Point move) {
-        room.setPosition(room.getRectangle().x + move.x, room.getRectangle().y + move.y);
+        room.setPosition(room.getMarginRectangle().x + move.x, room.getMarginRectangle().y + move.y);
     }
 }

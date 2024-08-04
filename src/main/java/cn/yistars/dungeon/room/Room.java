@@ -13,6 +13,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.World;
 import lombok.Getter;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.awt.*;
 import java.io.File;
@@ -24,12 +25,19 @@ public class Room {
     private final RoomType type;
     private final Rectangle rectangle;
     private final Clipboard clipboard;
+    private final Rectangle marginRectangle;
 
     public Room(String id) {
         this.type = RoomType.valueOf(BingDungeon.instance.Rooms.getConfig().getString(id + ".type", "NORMAL").toUpperCase());
         this.rectangle = new Rectangle(0, 0,
-                BingDungeon.instance.Rooms.getConfig().getInt(id + ".length"),
-                BingDungeon.instance.Rooms.getConfig().getInt(id + ".width")
+                BingDungeon.instance.Rooms.getConfig().getInt(id + ".width"),
+                BingDungeon.instance.Rooms.getConfig().getInt(id + ".length")
+        );
+        this.marginRectangle = new Rectangle(
+                rectangle.x,
+                rectangle.y,
+                rectangle.width + BingDungeon.instance.getConfig().getInt("unit-margin") * 2,
+                rectangle.height + BingDungeon.instance.getConfig().getInt("unit-margin") * 2
         );
 
         File file = BingDungeon.instance.getDataFolder().toPath().resolve("rooms/" + id + ".schem").toFile();
@@ -42,16 +50,22 @@ public class Room {
     }
 
     public void setPosition(int x, int y) {
-        this.rectangle.setLocation(x, y);
+        this.marginRectangle.setLocation(x, y);
+        this.rectangle.setLocation(x + BingDungeon.instance.getConfig().getInt("unit-margin"), y + BingDungeon.instance.getConfig().getInt("unit-margin"));
     }
 
     public void pasting(World world) {
-        try (EditSession editSession = WorldEdit.getInstance().newEditSession(world)) {
-            Operation operation = new ClipboardHolder(clipboard)
-                    .createPaste(editSession)
-                    .to(BlockVector3.at(rectangle.x * BingDungeon.instance.getConfig().getInt("unit-size"), 100, rectangle.y * BingDungeon.instance.getConfig().getInt("unit-size")))
-                    .build();
-            Operations.complete(operation);
-        }
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                try (EditSession editSession = WorldEdit.getInstance().newEditSession(world)) {
+                    Operation operation = new ClipboardHolder(clipboard)
+                            .createPaste(editSession)
+                            .to(BlockVector3.at(rectangle.x * BingDungeon.instance.getConfig().getInt("unit-size"), 100, rectangle.y * BingDungeon.instance.getConfig().getInt("unit-size")))
+                            .build();
+                    Operations.complete(operation);
+                }
+            }
+        }.runTaskAsynchronously(BingDungeon.instance);
     }
 }
