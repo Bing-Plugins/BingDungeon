@@ -7,6 +7,7 @@ import com.infernalsuite.aswm.api.world.SlimeWorld;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +20,16 @@ public class Arena {
 
     public Arena() {
         initWorld();
-        initRoom();
-        spawnRoom();
+    }
+
+    private void nextStep() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                initRoom();
+                spawnRoom();
+            }
+        }.runTaskAsynchronously(BingDungeon.instance);
     }
 
     private void initWorld() {
@@ -28,9 +37,15 @@ public class Arena {
                 BingDungeon.instance.getConfig().getString("mirror-world-id", "DungeonMirror-%timestamp%")
                         .replace("%timestamp%", String.valueOf(System.currentTimeMillis()))
         );
-        SlimeWorld mirror = ArenaManager.asp.loadWorld(mirrorWorld, true);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                SlimeWorld mirror = ArenaManager.asp.loadWorld(mirrorWorld, true);
+                world = Bukkit.getWorld(mirror.getName());
 
-        this.world = Bukkit.getWorld(mirror.getName());
+                nextStep();
+            }
+        }.runTask(BingDungeon.instance);
     }
 
     private void initRoom() {

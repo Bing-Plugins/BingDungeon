@@ -65,6 +65,12 @@ public class ArenaManager {
     }
 
     public static void createArena() {
-        arenas.add(new Arena());
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                arenas.add(new Arena());
+            }
+        }.runTaskAsynchronously(BingDungeon.instance);
+
     }
 }

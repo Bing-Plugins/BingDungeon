@@ -13,7 +13,6 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.World;
 import lombok.Getter;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.awt.*;
 import java.io.File;
@@ -55,17 +54,12 @@ public class Room {
     }
 
     public void pasting(World world) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try (EditSession editSession = WorldEdit.getInstance().newEditSession(world)) {
-                    Operation operation = new ClipboardHolder(clipboard)
-                            .createPaste(editSession)
-                            .to(BlockVector3.at(rectangle.x * BingDungeon.instance.getConfig().getInt("unit-size"), 100, rectangle.y * BingDungeon.instance.getConfig().getInt("unit-size")))
-                            .build();
-                    Operations.complete(operation);
-                }
-            }
-        }.runTaskAsynchronously(BingDungeon.instance);
+        try (EditSession editSession = WorldEdit.getInstance().newEditSession(world)) {
+            Operation operation = new ClipboardHolder(clipboard)
+                    .createPaste(editSession)
+                    .to(BlockVector3.at(rectangle.x * BingDungeon.instance.getConfig().getInt("unit-size"), 100, rectangle.y * BingDungeon.instance.getConfig().getInt("unit-size")))
+                    .build();
+            Operations.complete(operation);
+        }
     }
 }
