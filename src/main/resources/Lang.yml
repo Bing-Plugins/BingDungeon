@@ -55,7 +55,7 @@ setup-room-door-id-status: "&6房间 %id% 的门配置"
 setup-road-door-id-status: "&6标准走廊 %id% 的朝向配置"
 
 setup-room-door-status: "门(%num%): "
-setup-room-door-location-format: "&a(%x%, %y%, %z%)"
+setup-room-door-location-format: "&a(%x%, %y%, %z%, %facing%)"
 setup-room-door-location-hover: |-
   &f相对位置: &a(%x%, %z%)
   &fY 轴偏移量: &a%y-offset%
@@ -87,9 +87,13 @@ setup-door-not-set: "&c门位置未设置"
 setup-door-already-exist: "&c门位置已存在"
 setup-door-clear: "&c清除门配置成功"
 
-setup-save-success-msg: |-
+setup-room-save-success-msg: |-
   &f
-  &f成功保存配置: &e%id% &f(&a&l再来一个&f)
+  &f成功保存房间配置: &e%id% &f(&a&l再来一个&f)
+  &f
+setup-road-save-success-msg: |-
+  &f
+  &f成功保存标准走廊配置: &e%id% &f(&a&l再来一个&f)
   &f
 setup-cancel-msg: |-
   &f

@@ -23,7 +23,8 @@ public class LangManager {
 
         switch(key) {
             case "setup-id-status":
-            case "setup-save-success-msg":
+            case "setup-room-save-success-msg":
+            case "setup-road-save-success-msg":
             case "setup-room-door-id-status":
             case "setup-road-door-id-status":
                 msg = msg.replace("%id%", args[0]);

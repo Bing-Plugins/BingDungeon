@@ -176,7 +176,7 @@ public class SetupPlayer {
         // 检查重复
         int finalDoorX = doorX;
         int finalDoorZ = doorZ;
-        if (doors.stream().anyMatch(door -> door.getX() == finalDoorX && door.getZ() == finalDoorZ)) {
+        if (doors.stream().anyMatch(door -> door.getX() == finalDoorX && door.getZ() == finalDoorZ && door.getType() == doorType)) {
             this.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(LangManager.getLang("setup-door-already-exist")));
             return false;
         }
@@ -335,8 +335,8 @@ public class SetupPlayer {
         }
 
         // 保存提示
-        TextComponent textComponent = new TextComponent(LangManager.getLang("setup-save-success-msg", id));
-        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup"));
+        TextComponent textComponent = new TextComponent(LangManager.getLang("setup-" + setupType.toString().toLowerCase() + "-save-success-msg", id));
+        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-" + setupType.toString().toLowerCase()));
         player.spigot().sendMessage(textComponent);
 
         cancel();
