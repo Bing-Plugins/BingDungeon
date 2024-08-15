@@ -24,7 +24,8 @@ public class LangManager {
         switch(key) {
             case "setup-id-status":
             case "setup-save-success-msg":
-            case "setup-door-id-status":
+            case "setup-room-door-id-status":
+            case "setup-road-door-id-status":
                 msg = msg.replace("%id%", args[0]);
                 break;
             case "setup-type-status":
@@ -47,18 +48,24 @@ public class LangManager {
                 msg = msg.replace("%width%", args[1]);
                 msg = msg.replace("%height%", args[2]);
                 break;
-            case "setup-location-hover-not-allow-size":
+            case "setup-room-location-hover-not-allow-size":
+            case "setup-road-location-hover-not-allow-size":
                 msg = msg.replace("%unit-size%", args[0]);
                 break;
-            case "setup-door-status":
+            case "setup-room-door-status":
+            case "setup-road-door-status":
                 msg = msg.replace("%num%", args[0]);
                 break;
-            case "setup-door-location-format":
+            case "setup-room-door-location-format":
+            case "setup-road-door-location-format":
                 msg = msg.replace("%x%", args[0]);
                 msg = msg.replace("%y%", args[1]);
                 msg = msg.replace("%z%", args[2]);
+                msg = msg.replace("%facing%", args[3]);
+                msg = msg.replace("%y-offset%", args[4]);
                 break;
-            case "setup-door-location-hover":
+            case "setup-room-door-location-hover":
+            case "setup-road-door-location-hover":
                 msg = msg.replace("%x%", args[0]);
                 msg = msg.replace("%z%", args[1]);
                 msg = msg.replace("%y-offset%", args[2]);

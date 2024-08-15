@@ -11,6 +11,7 @@ public class BingDungeon extends JavaPlugin {
     public static BingDungeon instance;
     public final ConfigAccessor Lang = new ConfigAccessor(this, "Lang.yml");
     public final ConfigAccessor Rooms = new ConfigAccessor(this, "Rooms.yml");
+    public final ConfigAccessor Roads = new ConfigAccessor(this, "Roads.yml");
 
     @Override
     public void onEnable() {

@@ -51,6 +51,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
                 return true;
             case "setup-room":
+            case "setup-road":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(LangManager.getLang("need-player"));
                     return false;
@@ -66,7 +67,16 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
                 if (args.length == 1) {
                     if (setupPlayer == null) {
-                        SetupManager.addSetupPlayer(player);
+                        switch (args[0].toLowerCase()) {
+                            case "setup-room":
+                                SetupManager.addSetupRoomPlayer(player);
+                                break;
+                            case "setup-road":
+                                SetupManager.addSetupRoadPlayer(player);
+                                break;
+                            default:
+                                return false;
+                        }
                     } else {
                         setupPlayer.getSetupTip().sendRegionTip();
                     }
@@ -133,9 +143,13 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 break;
             case 2:
                 switch (args[0].toLowerCase()) {
-                    case "setup":
-                        String[] SetupCommands = {"complete", "id", "type", "cancel"};
-                        StringUtil.copyPartialMatches(args[1], Arrays.asList(SetupCommands), completions);
+                    case "setup-room":
+                        String[] setupRoomCommands = {"id", "type", "cancel", "save-region", "save-doors", "clear-doors"};
+                        StringUtil.copyPartialMatches(args[1], Arrays.asList(setupRoomCommands), completions);
+                        break;
+                    case "setup-road":
+                        String[] setupRoadCommands = {"id", "cancel", "save-region", "save-doors", "clear-doors"};
+                        StringUtil.copyPartialMatches(args[1], Arrays.asList(setupRoadCommands), completions);
                         break;
                 }
                 break;

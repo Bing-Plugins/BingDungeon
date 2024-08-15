@@ -10,8 +10,12 @@ import java.util.UUID;
 public class SetupManager {
     public static HashMap<UUID, SetupPlayer> setupPlayers = new HashMap<>();
 
-    public static void addSetupPlayer(Player player) {
-        setupPlayers.put(player.getUniqueId(), new SetupPlayer(player));
+    public static void addSetupRoomPlayer(Player player) {
+        setupPlayers.put(player.getUniqueId(), new SetupPlayer(player, SetupType.ROOM));
+    }
+
+    public static void addSetupRoadPlayer(Player player) {
+        setupPlayers.put(player.getUniqueId(), new SetupPlayer(player, SetupType.ROAD));
     }
 
     public static void removeSetupPlayer(Player player) {

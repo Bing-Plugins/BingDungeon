@@ -3,7 +3,7 @@ setup-room-region-stick-name: "&a配置房间选区棒"
 setup-doors-stick-name: "&e配置门棒"
 setup-road-region-stick-name: "&a配置走廊选区棒"
 
-setup-region-tip: |-
+setup-room-region-tip: |-
   
    %id-status%
    %type-status%
@@ -11,6 +11,14 @@ setup-region-tip: |-
    %second-location-status%
   
    %complete-button%
+
+setup-road-region-tip: |-
+  
+  %id-status%
+  %first-location-status%
+  %second-location-status%
+  
+  %complete-button%
 
 setup-status-success: "&a"
 setup-status-unset: "&7"
@@ -26,7 +34,8 @@ setup-second-location-status: "第二个位置: %second-location%"
 setup-location-format: "(%world%, %x%, %y%, %z%)"
 setup-location-hover-size: "长宽高: %length%&f*%width%&f*%height%"
 setup-location-hover-not-same-world: "&e两个坐标点不在同一世界"
-setup-location-hover-not-allow-size: "&e长或宽不属于 %unit-size% 的倍数"
+setup-room-location-hover-not-allow-size: "&e长或宽不属于 %unit-size% 的倍数"
+setup-road-location-hover-not-allow-size: "&e长或宽不为标准单元 %unit-size%"
 
 setup-button-split: " &f| "
 
@@ -42,14 +51,20 @@ setup-doors-tip: |-
   
   %complete-button%
 
-setup-door-id-status: "&6%id% 的门配置"
-setup-door-status: "门(%num%): "
-setup-door-location-format: "&a(%x%, %y%, %z%)"
+setup-room-door-id-status: "&6房间 %id% 的门配置"
+setup-road-door-id-status: "&6标准走廊 %id% 的朝向配置"
 
-setup-door-location-hover: |-
+setup-room-door-status: "门(%num%): "
+setup-room-door-location-format: "&a(%x%, %y%, %z%)"
+setup-room-door-location-hover: |-
   &f相对位置: &a(%x%, %z%)
   &fY 轴偏移量: &a%y-offset%
   &f面朝方向: &a%facing%
+
+setup-road-door-status: "朝向(%num%): "
+setup-road-door-location-format: "&a%facing%"
+setup-road-door-location-hover: |-
+  &fY 轴偏移量: &a%y-offset%
 
 setup-door-location-status-split: "&f, "
 

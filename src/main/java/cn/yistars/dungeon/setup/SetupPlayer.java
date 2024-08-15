@@ -37,6 +37,7 @@ public class SetupPlayer {
     private final SetupTip setupTip;
     @Setter
     private String id;
+    private final SetupType setupType;
     @Setter
     private RoomType roomType;
     private Location firstLocation, secondLocation;
@@ -44,8 +45,10 @@ public class SetupPlayer {
     private final HashSet<Door> doors = new HashSet<>();
     private Integer yOffset = -1;
 
-    public SetupPlayer(Player player) {
+    public SetupPlayer(Player player, SetupType setupType) {
         this.player = player;
+        this.setupType = setupType;
+
         this.setupTip = new SetupTip(this);
 
         giveRegionItem();
@@ -211,7 +214,14 @@ public class SetupPlayer {
     }
 
     public boolean canSaveRegion() {
-        return firstLocation != null && secondLocation != null && roomType != null && id != null && firstLocation.getWorld().equals(secondLocation.getWorld()) && isAllowSize();
+        switch(setupType) {
+            case ROOM:
+                return firstLocation != null && secondLocation != null && roomType != null && id != null && firstLocation.getWorld().equals(secondLocation.getWorld()) && isAllowSize();
+            case ROAD:
+                return firstLocation != null && secondLocation != null && id != null && firstLocation.getWorld().equals(secondLocation.getWorld()) && isAllowSize();
+            default:
+                return false;
+        }
     }
 
     public boolean isSameWorld() {
@@ -222,7 +232,14 @@ public class SetupPlayer {
     public boolean isAllowSize() {
         if (region == null) return true;
         // 判断 region 的宽高是否都整除 7
-        return region.getWidth() % BingDungeon.instance.getConfig().getInt("unit-size") == 0 && region.getLength() % BingDungeon.instance.getConfig().getInt("unit-size") == 0;
+        switch (setupType) {
+            case ROOM:
+                return region.getWidth() % BingDungeon.instance.getConfig().getInt("unit-size") == 0 && region.getLength() % BingDungeon.instance.getConfig().getInt("unit-size") == 0;
+            case ROAD:
+                return region.getWidth() == BingDungeon.instance.getConfig().getInt("unit-size") && region.getLength() == BingDungeon.instance.getConfig().getInt("unit-size");
+            default:
+                return false;
+        }
     }
 
     public void completeRegion() {
@@ -266,7 +283,18 @@ public class SetupPlayer {
         Operations.complete(forwardExtentCopy);
 
         // 保存
-        File file = BingDungeon.instance.getDataFolder().toPath().resolve("rooms/" + id + ".schem").toFile();
+        File file;
+
+        switch (setupType) {
+            case ROOM:
+                file = BingDungeon.instance.getDataFolder().toPath().resolve("rooms/" + id + ".schem").toFile();
+                break;
+            case ROAD:
+                file = BingDungeon.instance.getDataFolder().toPath().resolve("roads/" + id + ".schem").toFile();
+                break;
+            default:
+                return;
+        }
 
         try (ClipboardWriter writer = BuiltInClipboardFormat.FAST.getWriter(Files.newOutputStream(file.toPath()))) {
             writer.write(clipboard);
@@ -275,19 +303,36 @@ public class SetupPlayer {
         }
 
         // 保存到配置文件
-        BingDungeon.instance.Rooms.getConfig().set(id + ".width", region.getWidth() / BingDungeon.instance.getConfig().getInt("unit-size"));
-        BingDungeon.instance.Rooms.getConfig().set(id + ".length", region.getLength() / BingDungeon.instance.getConfig().getInt("unit-size"));
-        BingDungeon.instance.Rooms.getConfig().set(id + ".unit", BingDungeon.instance.getConfig().getInt("unit-size"));
-        BingDungeon.instance.Rooms.getConfig().set(id + ".type", roomType.toString());
+        switch(setupType) {
+            case ROOM:
+                BingDungeon.instance.Rooms.getConfig().set(id + ".width", region.getWidth() / BingDungeon.instance.getConfig().getInt("unit-size"));
+                BingDungeon.instance.Rooms.getConfig().set(id + ".length", region.getLength() / BingDungeon.instance.getConfig().getInt("unit-size"));
+                BingDungeon.instance.Rooms.getConfig().set(id + ".unit", BingDungeon.instance.getConfig().getInt("unit-size"));
+                BingDungeon.instance.Rooms.getConfig().set(id + ".type", roomType.toString());
 
-        BingDungeon.instance.Rooms.getConfig().set(id + ".y-offset", yOffset);
-        ArrayList<String> doorsList = new ArrayList<>();
-        for (Door door : doors) {
-            doorsList.add(door.getX() + "," + door.getZ() + "," + door.getType());
+                BingDungeon.instance.Rooms.getConfig().set(id + ".y-offset", yOffset);
+                ArrayList<String> doorsList = new ArrayList<>();
+                for (Door door : doors) {
+                    doorsList.add(door.getX() + "," + door.getZ() + "," + door.getType());
+                }
+                BingDungeon.instance.Rooms.getConfig().set(id + ".doors", doorsList);
+
+                BingDungeon.instance.Rooms.saveConfig();
+                break;
+            case ROAD:
+                BingDungeon.instance.Roads.getConfig().set(id + ".unit", BingDungeon.instance.getConfig().getInt("unit-size"));
+                BingDungeon.instance.Roads.getConfig().set(id + ".y-offset", yOffset);
+                ArrayList<String> facingList = new ArrayList<>();
+                for (Door door : doors) {
+                    facingList.add(String.valueOf(door.getType()));
+                }
+                BingDungeon.instance.Roads.getConfig().set(id + ".facing", facingList);
+
+                BingDungeon.instance.Roads.saveConfig();
+                break;
+            default:
+                return;
         }
-        BingDungeon.instance.Rooms.getConfig().set(id + ".doors", doorsList);
-
-        BingDungeon.instance.Rooms.saveConfig();
 
         // 保存提示
         TextComponent textComponent = new TextComponent(LangManager.getLang("setup-save-success-msg", id));
