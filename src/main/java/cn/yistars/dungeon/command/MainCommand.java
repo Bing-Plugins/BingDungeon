@@ -92,6 +92,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                             setupPlayer.getSetupTip().sendRegionTip();
                             return true;
                         case "cancel":
+                            setupPlayer.cancel();
                             SetupManager.setupPlayers.remove(player.getUniqueId());
                             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(LangManager.getLang("setup-cancel")));
                             LangManager.sendMsg(player, "setup-cancel-msg");

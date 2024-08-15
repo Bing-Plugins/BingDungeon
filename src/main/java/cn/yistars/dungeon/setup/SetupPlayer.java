@@ -204,6 +204,9 @@ public class SetupPlayer {
             if (SetupManager.isSetupRegionStick(itemStack)) {
                 player.getInventory().remove(itemStack);
             }
+            if (SetupManager.isSetupDoorsStick(itemStack)) {
+                player.getInventory().remove(itemStack);
+            }
         }
     }
 
