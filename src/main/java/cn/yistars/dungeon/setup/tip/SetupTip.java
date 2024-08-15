@@ -61,7 +61,7 @@ public class SetupTip {
         }
 
         TextComponent textComponent = new TextComponent(line);
-        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingdungeon setup id "));
+        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingdungeon setup-room id "));
         return textComponent;
     }
 
@@ -73,7 +73,7 @@ public class SetupTip {
         }
 
         TextComponent textComponent = new TextComponent(line);
-        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingdungeon setup type "));
+        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/bingdungeon setup-room type "));
         return textComponent;
     }
 
@@ -96,7 +96,7 @@ public class SetupTip {
         }
 
         TextComponent textComponent = new TextComponent(line);
-        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup get-stick"));
+        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-room get-stick"));
         if (setupPlayer.getFirstLocation() != null && setupPlayer.getSecondLocation() != null) {
             List<Content> hovers = new ArrayList<>();
             String length = (setupPlayer.isLengthAllowed() ? getLevel(TipLevel.SUCCESS) : getLevel(TipLevel.WARNING)) + setupPlayer.getRegion().getLength();
@@ -126,7 +126,7 @@ public class SetupTip {
         TextComponent saveButton;
         if (setupPlayer.canSaveRegion()) {
             saveButton = new TextComponent(getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-save-region-button"));
-            saveButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup save-region"));
+            saveButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-room save-region"));
         } else {
             saveButton = new TextComponent(getLevel(TipLevel.UNSET) + LangManager.getLang("setup-save-region-button"));
         }
@@ -135,7 +135,7 @@ public class SetupTip {
         lines.add(new TextComponent(LangManager.getLang("setup-button-split")));
         // 取消按钮
         TextComponent cancelButton = new TextComponent(LangManager.getLang("setup-cancel-button"));
-        cancelButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup cancel"));
+        cancelButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-room cancel"));
         lines.add(cancelButton);
 
         return lines;
@@ -212,7 +212,7 @@ public class SetupTip {
         TextComponent saveButton;
         if (!setupPlayer.getDoors().isEmpty()) {
             saveButton = new TextComponent(getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-save-doors-button"));
-            saveButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup save-doors"));
+            saveButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-room save-doors"));
         } else {
             saveButton = new TextComponent(getLevel(TipLevel.UNSET) + LangManager.getLang("setup-save-doors-button"));
         }
@@ -223,7 +223,7 @@ public class SetupTip {
         TextComponent clearButton;
         if (!setupPlayer.getDoors().isEmpty()) {
             clearButton = new TextComponent(getLevel(TipLevel.WARNING) + LangManager.getLang("setup-clear-doors-button"));
-            clearButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup clear-doors"));
+            clearButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-room clear-doors"));
         } else {
             clearButton = new TextComponent(getLevel(TipLevel.UNSET) + LangManager.getLang("setup-clear-doors-button"));
         }
@@ -232,7 +232,7 @@ public class SetupTip {
         lines.add(new TextComponent(LangManager.getLang("setup-complete-button-split")));
         // 取消按钮
         TextComponent cancelButton = new TextComponent(LangManager.getLang("setup-cancel-button"));
-        cancelButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup cancel"));
+        cancelButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-room cancel"));
         lines.add(cancelButton);
 
         return lines;

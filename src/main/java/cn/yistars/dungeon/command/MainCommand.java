@@ -50,7 +50,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(LangManager.getLang("success-reload"));
 
                 return true;
-            case "setup":
+            case "setup-room":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(LangManager.getLang("need-player"));
                     return false;
@@ -126,7 +126,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 1:
                 // 定义列表
-                String[] Commands = {"reload", "help", "setup"};
+                String[] Commands = {"reload", "help", "setup-room", "setup-road", "debug"};
                 // 通过开头判断
                 StringUtil.copyPartialMatches(args[0], Arrays.asList(Commands), completions);
                 break;
