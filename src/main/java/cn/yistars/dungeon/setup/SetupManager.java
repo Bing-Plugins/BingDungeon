@@ -23,10 +23,17 @@ public class SetupManager {
         return setupPlayers.get(player.getUniqueId());
     }
 
-    public static Boolean isSetupStick(ItemStack item) {
+    public static Boolean isSetupRegionStick(ItemStack item) {
         return NBT.get(item, nbt -> {
             if (!nbt.hasTag("BingDungeon")) return false;
-            return nbt.getString("BingDungeon").equals("setup-stick");
+            return nbt.getString("BingDungeon").equals("setup-region-stick");
+        });
+    }
+
+    public static Boolean isSetupDoorsStick(ItemStack item) {
+        return NBT.get(item, nbt -> {
+            if (!nbt.hasTag("BingDungeon")) return false;
+            return nbt.getString("BingDungeon").equals("setup-doors-stick");
         });
     }
 }

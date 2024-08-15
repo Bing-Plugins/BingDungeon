@@ -25,13 +25,13 @@ public class SetupListener implements Listener {
         if (!SetupManager.setupPlayers.containsKey(event.getPlayer().getUniqueId())) return;
         ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
 
-        if (!SetupManager.isSetupStick(item)) return;
+        if (!SetupManager.isSetupRegionStick(item)) return;
 
         SetupPlayer setupPlayer = SetupManager.setupPlayers.get(event.getPlayer().getUniqueId());
 
         setupPlayer.setFirstLocation(event.getBlock().getLocation());
 
-        setupPlayer.getSetupTip().sendTip();
+        setupPlayer.getSetupTip().sendRegionTip();
 
         event.setCancelled(true);
     }
@@ -42,13 +42,30 @@ public class SetupListener implements Listener {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
 
-        if (!SetupManager.isSetupStick(item)) return;
+        if (!SetupManager.isSetupRegionStick(item)) return;
 
         SetupPlayer setupPlayer = SetupManager.setupPlayers.get(event.getPlayer().getUniqueId());
 
         setupPlayer.setSecondLocation(event.getClickedBlock().getLocation());
 
-        setupPlayer.getSetupTip().sendTip();
+        setupPlayer.getSetupTip().sendRegionTip();
+
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onSetupDoors(PlayerInteractEvent event) {
+        if (!SetupManager.setupPlayers.containsKey(event.getPlayer().getUniqueId())) return;
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
+
+        if (!SetupManager.isSetupDoorsStick(item)) return;
+
+        SetupPlayer setupPlayer = SetupManager.setupPlayers.get(event.getPlayer().getUniqueId());
+
+        if (setupPlayer.addDoor(event.getClickedBlock().getLocation())) {
+            setupPlayer.getSetupTip().sendDoorsTip();
+        }
 
         event.setCancelled(true);
     }

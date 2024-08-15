@@ -1,5 +1,8 @@
 # 配置
-setup-tip: |-
+setup-region-stick-name: "&a配置选区棒"
+setup-doors-stick-name: "&e配置门棒"
+
+setup-region-tip: |-
   
    %id-status%
    %type-status%
@@ -24,9 +27,34 @@ setup-location-hover-size: "长宽高: %length%&f*%width%&f*%height%"
 setup-location-hover-not-same-world: "&e两个坐标点不在同一世界"
 setup-location-hover-not-allow-size: "&e长或宽不属于 %unit-size% 的倍数"
 
-setup-complete-button-split: " &f| "
-setup-save-button: "&l保存配置"
+setup-button-split: " &f| "
+
+setup-save-region-button: "&l保存选区"
 setup-cancel-button: "&c&l取消配置"
+
+setup-doors-tip: |-
+  
+  %id-info%
+  
+  %doors-status%
+  
+  
+  %complete-button%
+
+setup-door-id-status: "&6%id% 的门配置"
+setup-door-status: "门(%num%): "
+setup-door-location-format: "&a(%x%, %y%, %z%)"
+
+setup-door-location-hover: |-
+  &f相对位置: &a(%x%, %z%)
+  &fY 轴偏移量: &a%y-offset%
+  &f面朝方向: &a%facing%
+
+setup-door-location-status-split: "&f, "
+
+setup-complete-button-split: " &f| "
+setup-save-doors-button: "&l保存门配置"
+setup-clear-doors-button: "&l清除所有门"
 
 setup-not-enable-setup: "&c当前服务器未启用配置模式"
 setup-player-not-in-setup: "&c你当前未在配置模式, 请先使用 /bingdungeon setup"
@@ -35,12 +63,20 @@ setup-location-not-in-same-world: "&c两个位置必须在同一个世界"
 setup-room-unit-size-incorrect: "&c房间尺寸不正确"
 setup-still-unfinished-projects: "&c当前还有未完成的项目"
 
+setup-door-not-in-region: "&c门位置不在选区范围内"
+setup-door-not-in-edge: "&c门位置不在选区边框上"
+setup-door-not-in-center-of-unit: "&c门位置不在选区单元的中间位置"
+setup-door-not-same-y-offset: "&c门位置与其他门位置的 Y 轴偏移量不同"
+setup-door-not-set: "&c门位置未设置"
+setup-door-already-exist: "&c门位置已存在"
+setup-door-clear: "&c清除门配置成功"
+
 setup-save-success-msg: |-
   &f
   &f成功保存配置: &e%id% &f(&a&l再来一个&f)
   &f
 setup-cancel-msg: |-
-  
+  &f
   &c你退出了配置模式
   &f
 

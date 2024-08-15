@@ -2,6 +2,7 @@ package cn.yistars.dungeon.setup.tip;
 
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.config.LangManager;
+import cn.yistars.dungeon.room.door.Door;
 import cn.yistars.dungeon.setup.SetupPlayer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -20,9 +21,9 @@ public class SetupTip {
         this.setupPlayer = setupPlayer;
     }
 
-    public void sendTip() {
+    public void sendRegionTip() {
         ArrayList<TextComponent> lines = new ArrayList<>();
-        for (String line : LangManager.getLang("setup-tip").split("(?<=\n)")) {
+        for (String line : LangManager.getLang("setup-region-tip").split("(?<=\n)")) {
             switch(line.replace("\n", "").toLowerCase()) {
                 case "%id-status%":
                     lines.add(getIDStatus(line));
@@ -37,7 +38,7 @@ public class SetupTip {
                     lines.add(getLocationStatus(line, "second", setupPlayer.getSecondLocation(), setupPlayer.isSameWorld(), setupPlayer.isAllowSize()));
                     break;
                 case "%complete-button%":
-                    lines.addAll(getButton());
+                    lines.addAll(getRegionButton());
                     break;
                 default:
                     lines.add(new TextComponent(line));
@@ -120,16 +121,113 @@ public class SetupTip {
         return textComponent;
     }
 
-    private ArrayList<TextComponent> getButton() {
+    private ArrayList<TextComponent> getRegionButton() {
         ArrayList<TextComponent> lines = new ArrayList<>();
         TextComponent saveButton;
-        if (setupPlayer.canComplete()) {
-            saveButton = new TextComponent(getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-save-button"));
-            saveButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup complete"));
+        if (setupPlayer.canSaveRegion()) {
+            saveButton = new TextComponent(getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-save-region-button"));
+            saveButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup save-region"));
         } else {
-            saveButton = new TextComponent(getLevel(TipLevel.UNSET) + LangManager.getLang("setup-save-button"));
+            saveButton = new TextComponent(getLevel(TipLevel.UNSET) + LangManager.getLang("setup-save-region-button"));
         }
         lines.add(saveButton);
+        // 中间
+        lines.add(new TextComponent(LangManager.getLang("setup-button-split")));
+        // 取消按钮
+        TextComponent cancelButton = new TextComponent(LangManager.getLang("setup-cancel-button"));
+        cancelButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup cancel"));
+        lines.add(cancelButton);
+
+        return lines;
+    }
+
+    public void sendDoorsTip() {
+        ArrayList<TextComponent> lines = new ArrayList<>();
+        for (String line : LangManager.getLang("setup-doors-tip").split("(?<=\n)")) {
+            switch(line.replace("\n", "").toLowerCase()) {
+                case "%id-info%":
+                    lines.add(getIDInfo(line));
+                    break;
+                case "%doors-status%":
+                    lines.addAll(getDoorsStatus());
+                    break;
+                case "%complete-button%":
+                    lines.addAll(getDoorsButton());
+                    break;
+                default:
+                    lines.add(new TextComponent(line));
+            }
+        }
+
+        TextComponent[] components = new TextComponent[lines.size()];
+        for (int i = 0; i < lines.size(); i++) {
+            components[i] = lines.get(i);
+        }
+
+        setupPlayer.getPlayer().spigot().sendMessage(components);
+    }
+
+    private TextComponent getIDInfo(String line) {
+        line = line.replace("%id-info%", LangManager.getLang("setup-door-id-status", setupPlayer.getId()));
+
+        return new TextComponent(line);
+    }
+
+    private ArrayList<TextComponent> getDoorsStatus() {
+        ArrayList<TextComponent> lines = new ArrayList<>();
+        TextComponent status = new TextComponent(LangManager.getLang("setup-door-status", setupPlayer.getDoors().size() + ""));
+        lines.add(status);
+
+        for (Door door : setupPlayer.getDoors()) {
+            TextComponent doorText = new TextComponent(LangManager.getLang(
+                    "setup-door-location-format",
+                    String.valueOf(door.getLocation().getBlockX()),
+                    String.valueOf(door.getLocation().getBlockY()),
+                    String.valueOf(door.getLocation().getBlockZ())
+            ));
+
+            doorText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(
+                    LangManager.getLang("setup-door-location-hover",
+                            String.valueOf(door.getX()),
+                            String.valueOf(door.getZ()),
+                            String.valueOf(setupPlayer.getYOffset()),
+                            door.getType().toString()
+                    )
+            )));
+
+            lines.add(doorText);
+
+            lines.add(new TextComponent(LangManager.getLang("setup-door-location-status-split")));
+        }
+
+        if (lines.size() >= 3) {
+            lines.remove(lines.size() - 1);
+        }
+
+        return lines;
+    }
+
+    private ArrayList<TextComponent> getDoorsButton() {
+        ArrayList<TextComponent> lines = new ArrayList<>();
+        TextComponent saveButton;
+        if (!setupPlayer.getDoors().isEmpty()) {
+            saveButton = new TextComponent(getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-save-doors-button"));
+            saveButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup save-doors"));
+        } else {
+            saveButton = new TextComponent(getLevel(TipLevel.UNSET) + LangManager.getLang("setup-save-doors-button"));
+        }
+        lines.add(saveButton);
+        // 中间
+        lines.add(new TextComponent(LangManager.getLang("setup-complete-button-split")));
+        // 清除所有门
+        TextComponent clearButton;
+        if (!setupPlayer.getDoors().isEmpty()) {
+            clearButton = new TextComponent(getLevel(TipLevel.WARNING) + LangManager.getLang("setup-clear-doors-button"));
+            clearButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup clear-doors"));
+        } else {
+            clearButton = new TextComponent(getLevel(TipLevel.UNSET) + LangManager.getLang("setup-clear-doors-button"));
+        }
+        lines.add(clearButton);
         // 中间
         lines.add(new TextComponent(LangManager.getLang("setup-complete-button-split")));
         // 取消按钮

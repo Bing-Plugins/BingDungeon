@@ -68,7 +68,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     if (setupPlayer == null) {
                         SetupManager.addSetupPlayer(player);
                     } else {
-                        setupPlayer.getSetupTip().sendTip();
+                        setupPlayer.getSetupTip().sendRegionTip();
                     }
                     return true;
                 } else {
@@ -78,23 +78,31 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     }
 
                     switch (args[1].toLowerCase()) {
-                        case "complete":
-                            setupPlayer.complete();
+                        case "save-region":
+                            setupPlayer.completeRegion();
                             return true;
                         case "id":
                             if (args.length < 3) return false;
                             setupPlayer.setId(args[2]);
-                            setupPlayer.getSetupTip().sendTip();
+                            setupPlayer.getSetupTip().sendRegionTip();
                             return true;
                         case "type":
                             if (args.length < 3) return false;
                             setupPlayer.setRoomType(RoomType.valueOf(args[2].toUpperCase()));
-                            setupPlayer.getSetupTip().sendTip();
+                            setupPlayer.getSetupTip().sendRegionTip();
                             return true;
                         case "cancel":
                             SetupManager.setupPlayers.remove(player.getUniqueId());
                             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(LangManager.getLang("setup-cancel")));
                             LangManager.sendMsg(player, "setup-cancel-msg");
+                            return true;
+                        case "clear-doors":
+                            setupPlayer.clearDoors();
+                            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(LangManager.getLang("setup-door-clear")));
+                            setupPlayer.getSetupTip().sendDoorsTip();
+                            return true;
+                        case "save-doors":
+                            setupPlayer.completeDoors();
                             return true;
                     }
                     return false;
