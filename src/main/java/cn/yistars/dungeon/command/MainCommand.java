@@ -5,8 +5,8 @@ import cn.yistars.dungeon.arena.ArenaManager;
 import cn.yistars.dungeon.config.ConfigManager;
 import cn.yistars.dungeon.config.LangManager;
 import cn.yistars.dungeon.room.RoomType;
-import cn.yistars.dungeon.setup.SetupManager;
-import cn.yistars.dungeon.setup.SetupPlayer;
+import cn.yistars.dungeon.setup.SetupRoomManager;
+import cn.yistars.dungeon.setup.SetupRoomPlayer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.command.Command;
@@ -62,48 +62,48 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     return false;
                 }
 
-                SetupPlayer setupPlayer = SetupManager.getSetupPlayer(player);
+                SetupRoomPlayer setupRoomPlayer = SetupRoomManager.getSetupPlayer(player);
 
                 if (args.length == 1) {
-                    if (setupPlayer == null) {
-                        SetupManager.addSetupPlayer(player);
+                    if (setupRoomPlayer == null) {
+                        SetupRoomManager.addSetupPlayer(player);
                     } else {
-                        setupPlayer.getSetupTip().sendRegionTip();
+                        setupRoomPlayer.getSetupTip().sendRegionTip();
                     }
                     return true;
                 } else {
-                    if (setupPlayer == null) {
+                    if (setupRoomPlayer == null) {
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(LangManager.getLang("setup-player-not-in-setup")));
                         return false;
                     }
 
                     switch (args[1].toLowerCase()) {
                         case "save-region":
-                            setupPlayer.completeRegion();
+                            setupRoomPlayer.completeRegion();
                             return true;
                         case "id":
                             if (args.length < 3) return false;
-                            setupPlayer.setId(args[2]);
-                            setupPlayer.getSetupTip().sendRegionTip();
+                            setupRoomPlayer.setId(args[2]);
+                            setupRoomPlayer.getSetupTip().sendRegionTip();
                             return true;
                         case "type":
                             if (args.length < 3) return false;
-                            setupPlayer.setRoomType(RoomType.valueOf(args[2].toUpperCase()));
-                            setupPlayer.getSetupTip().sendRegionTip();
+                            setupRoomPlayer.setRoomType(RoomType.valueOf(args[2].toUpperCase()));
+                            setupRoomPlayer.getSetupTip().sendRegionTip();
                             return true;
                         case "cancel":
-                            setupPlayer.cancel();
-                            SetupManager.setupPlayers.remove(player.getUniqueId());
+                            setupRoomPlayer.cancel();
+                            SetupRoomManager.setupPlayers.remove(player.getUniqueId());
                             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(LangManager.getLang("setup-cancel")));
                             LangManager.sendMsg(player, "setup-cancel-msg");
                             return true;
                         case "clear-doors":
-                            setupPlayer.clearDoors();
+                            setupRoomPlayer.clearDoors();
                             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(LangManager.getLang("setup-door-clear")));
-                            setupPlayer.getSetupTip().sendDoorsTip();
+                            setupRoomPlayer.getSetupTip().sendDoorsTip();
                             return true;
                         case "save-doors":
-                            setupPlayer.completeDoors();
+                            setupRoomPlayer.completeDoors();
                             return true;
                     }
                     return false;

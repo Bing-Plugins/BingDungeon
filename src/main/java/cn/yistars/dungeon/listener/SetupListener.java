@@ -1,7 +1,7 @@
 package cn.yistars.dungeon.listener;
 
-import cn.yistars.dungeon.setup.SetupManager;
-import cn.yistars.dungeon.setup.SetupPlayer;
+import cn.yistars.dungeon.setup.SetupRoomManager;
+import cn.yistars.dungeon.setup.SetupRoomPlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -16,55 +16,55 @@ public class SetupListener implements Listener {
      */
     @EventHandler
     public void onPlayerQuitServer(PlayerQuitEvent event) {
-        if (!SetupManager.setupPlayers.containsKey(event.getPlayer().getUniqueId())) return;
-        SetupManager.removeSetupPlayer(event.getPlayer());
+        if (!SetupRoomManager.setupPlayers.containsKey(event.getPlayer().getUniqueId())) return;
+        SetupRoomManager.removeSetupPlayer(event.getPlayer());
     }
 
     @EventHandler
     public void onSetupFirstLocation(BlockBreakEvent event) {
-        if (!SetupManager.setupPlayers.containsKey(event.getPlayer().getUniqueId())) return;
+        if (!SetupRoomManager.setupPlayers.containsKey(event.getPlayer().getUniqueId())) return;
         ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
 
-        if (!SetupManager.isSetupRegionStick(item)) return;
+        if (!SetupRoomManager.isSetupRegionStick(item)) return;
 
-        SetupPlayer setupPlayer = SetupManager.setupPlayers.get(event.getPlayer().getUniqueId());
+        SetupRoomPlayer setupRoomPlayer = SetupRoomManager.setupPlayers.get(event.getPlayer().getUniqueId());
 
-        setupPlayer.setFirstLocation(event.getBlock().getLocation());
+        setupRoomPlayer.setFirstLocation(event.getBlock().getLocation());
 
-        setupPlayer.getSetupTip().sendRegionTip();
+        setupRoomPlayer.getSetupTip().sendRegionTip();
 
         event.setCancelled(true);
     }
 
     @EventHandler
     public void onSetupSecondLocation(PlayerInteractEvent event) {
-        if (!SetupManager.setupPlayers.containsKey(event.getPlayer().getUniqueId())) return;
+        if (!SetupRoomManager.setupPlayers.containsKey(event.getPlayer().getUniqueId())) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
 
-        if (!SetupManager.isSetupRegionStick(item)) return;
+        if (!SetupRoomManager.isSetupRegionStick(item)) return;
 
-        SetupPlayer setupPlayer = SetupManager.setupPlayers.get(event.getPlayer().getUniqueId());
+        SetupRoomPlayer setupRoomPlayer = SetupRoomManager.setupPlayers.get(event.getPlayer().getUniqueId());
 
-        setupPlayer.setSecondLocation(event.getClickedBlock().getLocation());
+        setupRoomPlayer.setSecondLocation(event.getClickedBlock().getLocation());
 
-        setupPlayer.getSetupTip().sendRegionTip();
+        setupRoomPlayer.getSetupTip().sendRegionTip();
 
         event.setCancelled(true);
     }
 
     @EventHandler
     public void onSetupDoors(PlayerInteractEvent event) {
-        if (!SetupManager.setupPlayers.containsKey(event.getPlayer().getUniqueId())) return;
+        if (!SetupRoomManager.setupPlayers.containsKey(event.getPlayer().getUniqueId())) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
 
-        if (!SetupManager.isSetupDoorsStick(item)) return;
+        if (!SetupRoomManager.isSetupDoorsStick(item)) return;
 
-        SetupPlayer setupPlayer = SetupManager.setupPlayers.get(event.getPlayer().getUniqueId());
+        SetupRoomPlayer setupRoomPlayer = SetupRoomManager.setupPlayers.get(event.getPlayer().getUniqueId());
 
-        if (setupPlayer.addDoor(event.getClickedBlock().getLocation())) {
-            setupPlayer.getSetupTip().sendDoorsTip();
+        if (setupRoomPlayer.addDoor(event.getClickedBlock().getLocation())) {
+            setupRoomPlayer.getSetupTip().sendDoorsTip();
         }
 
         event.setCancelled(true);

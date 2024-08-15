@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 @Getter
-public class SetupPlayer {
+public class SetupRoomPlayer {
     private final Player player;
     private final SetupTip setupTip;
     @Setter
@@ -44,7 +44,7 @@ public class SetupPlayer {
     private final HashSet<Door> doors = new HashSet<>();
     private Integer yOffset = -1;
 
-    public SetupPlayer(Player player) {
+    public SetupRoomPlayer(Player player) {
         this.player = player;
         this.setupTip = new SetupTip(this);
 
@@ -198,13 +198,13 @@ public class SetupPlayer {
     }
 
     public void cancel() {
-        SetupManager.setupPlayers.remove(player.getUniqueId());
+        SetupRoomManager.setupPlayers.remove(player.getUniqueId());
         for (ItemStack itemStack : player.getInventory().getContents()) {
             if (itemStack == null) continue;
-            if (SetupManager.isSetupRegionStick(itemStack)) {
+            if (SetupRoomManager.isSetupRegionStick(itemStack)) {
                 player.getInventory().remove(itemStack);
             }
-            if (SetupManager.isSetupDoorsStick(itemStack)) {
+            if (SetupRoomManager.isSetupDoorsStick(itemStack)) {
                 player.getInventory().remove(itemStack);
             }
         }
