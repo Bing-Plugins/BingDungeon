@@ -1,9 +1,9 @@
-package cn.yistars.dungeon.setup.tip;
+package cn.yistars.dungeon.setup.room.tip;
 
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.config.LangManager;
 import cn.yistars.dungeon.room.door.Door;
-import cn.yistars.dungeon.setup.SetupRoomPlayer;
+import cn.yistars.dungeon.setup.room.SetupRoomPlayer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;

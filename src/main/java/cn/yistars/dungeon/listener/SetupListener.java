@@ -1,7 +1,7 @@
 package cn.yistars.dungeon.listener;
 
-import cn.yistars.dungeon.setup.SetupRoomManager;
-import cn.yistars.dungeon.setup.SetupRoomPlayer;
+import cn.yistars.dungeon.setup.room.SetupRoomManager;
+import cn.yistars.dungeon.setup.room.SetupRoomPlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;

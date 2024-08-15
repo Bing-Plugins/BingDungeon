@@ -1,11 +1,11 @@
-package cn.yistars.dungeon.setup;
+package cn.yistars.dungeon.setup.room;
 
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.config.LangManager;
 import cn.yistars.dungeon.room.RoomType;
 import cn.yistars.dungeon.room.door.Door;
 import cn.yistars.dungeon.room.door.DoorType;
-import cn.yistars.dungeon.setup.tip.SetupTip;
+import cn.yistars.dungeon.setup.room.tip.SetupTip;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
