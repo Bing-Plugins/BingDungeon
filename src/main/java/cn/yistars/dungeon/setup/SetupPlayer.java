@@ -1,11 +1,11 @@
-package cn.yistars.dungeon.setup.room;
+package cn.yistars.dungeon.setup;
 
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.config.LangManager;
 import cn.yistars.dungeon.room.RoomType;
 import cn.yistars.dungeon.room.door.Door;
 import cn.yistars.dungeon.room.door.DoorType;
-import cn.yistars.dungeon.setup.room.tip.SetupTip;
+import cn.yistars.dungeon.setup.tip.SetupTip;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 @Getter
-public class SetupRoomPlayer {
+public class SetupPlayer {
     private final Player player;
     private final SetupTip setupTip;
     @Setter
@@ -44,7 +44,7 @@ public class SetupRoomPlayer {
     private final HashSet<Door> doors = new HashSet<>();
     private Integer yOffset = -1;
 
-    public SetupRoomPlayer(Player player) {
+    public SetupPlayer(Player player) {
         this.player = player;
         this.setupTip = new SetupTip(this);
 
@@ -198,13 +198,13 @@ public class SetupRoomPlayer {
     }
 
     public void cancel() {
-        SetupRoomManager.setupPlayers.remove(player.getUniqueId());
+        SetupManager.setupPlayers.remove(player.getUniqueId());
         for (ItemStack itemStack : player.getInventory().getContents()) {
             if (itemStack == null) continue;
-            if (SetupRoomManager.isSetupRegionStick(itemStack)) {
+            if (SetupManager.isSetupRegionStick(itemStack)) {
                 player.getInventory().remove(itemStack);
             }
-            if (SetupRoomManager.isSetupDoorsStick(itemStack)) {
+            if (SetupManager.isSetupDoorsStick(itemStack)) {
                 player.getInventory().remove(itemStack);
             }
         }

@@ -1,4 +1,4 @@
-package cn.yistars.dungeon.setup.room.tip;
+package cn.yistars.dungeon.setup.tip;
 
 public enum TipLevel {
     SUCCESS,

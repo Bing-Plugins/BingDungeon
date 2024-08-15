@@ -1,9 +1,9 @@
-package cn.yistars.dungeon.setup.room.tip;
+package cn.yistars.dungeon.setup.tip;
 
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.config.LangManager;
 import cn.yistars.dungeon.room.door.Door;
-import cn.yistars.dungeon.setup.room.SetupRoomPlayer;
+import cn.yistars.dungeon.setup.SetupPlayer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -15,10 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SetupTip {
-    private final SetupRoomPlayer setupRoomPlayer;
+    private final SetupPlayer setupPlayer;
 
-    public SetupTip(SetupRoomPlayer setupRoomPlayer) {
-        this.setupRoomPlayer = setupRoomPlayer;
+    public SetupTip(SetupPlayer setupPlayer) {
+        this.setupPlayer = setupPlayer;
     }
 
     public void sendRegionTip() {
@@ -32,10 +32,10 @@ public class SetupTip {
                     lines.add(getRoomTypeStatus(line));
                     break;
                 case "%first-location-status%":
-                    lines.add(getLocationStatus(line, "first", setupRoomPlayer.getFirstLocation(), setupRoomPlayer.isSameWorld(), setupRoomPlayer.isAllowSize()));
+                    lines.add(getLocationStatus(line, "first", setupPlayer.getFirstLocation(), setupPlayer.isSameWorld(), setupPlayer.isAllowSize()));
                     break;
                 case "%second-location-status%":
-                    lines.add(getLocationStatus(line, "second", setupRoomPlayer.getSecondLocation(), setupRoomPlayer.isSameWorld(), setupRoomPlayer.isAllowSize()));
+                    lines.add(getLocationStatus(line, "second", setupPlayer.getSecondLocation(), setupPlayer.isSameWorld(), setupPlayer.isAllowSize()));
                     break;
                 case "%complete-button%":
                     lines.addAll(getRegionButton());
@@ -50,14 +50,14 @@ public class SetupTip {
             components[i] = lines.get(i);
         }
 
-        setupRoomPlayer.getPlayer().spigot().sendMessage(components);
+        setupPlayer.getPlayer().spigot().sendMessage(components);
     }
 
     private TextComponent getIDStatus(String line) {
-        if (setupRoomPlayer.getId() == null) {
+        if (setupPlayer.getId() == null) {
             line = line.replace("%id-status%", getLevel(TipLevel.UNSET) + LangManager.getLang("setup-id-status", LangManager.getLang("setup-unset")));
         } else {
-            line = line.replace("%id-status%", getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-id-status", setupRoomPlayer.getId()));
+            line = line.replace("%id-status%", getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-id-status", setupPlayer.getId()));
         }
 
         TextComponent textComponent = new TextComponent(line);
@@ -66,10 +66,10 @@ public class SetupTip {
     }
 
     private TextComponent getRoomTypeStatus(String line) {
-        if (setupRoomPlayer.getRoomType() == null) {
+        if (setupPlayer.getRoomType() == null) {
             line = line.replace("%type-status%", getLevel(TipLevel.UNSET) + LangManager.getLang("setup-type-status", LangManager.getLang("setup-unset")));
         } else {
-            line = line.replace("%type-status%", getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-type-status", setupRoomPlayer.getRoomType().toString()));
+            line = line.replace("%type-status%", getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-type-status", setupPlayer.getRoomType().toString()));
         }
 
         TextComponent textComponent = new TextComponent(line);
@@ -97,11 +97,11 @@ public class SetupTip {
 
         TextComponent textComponent = new TextComponent(line);
         textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-room get-stick"));
-        if (setupRoomPlayer.getFirstLocation() != null && setupRoomPlayer.getSecondLocation() != null) {
+        if (setupPlayer.getFirstLocation() != null && setupPlayer.getSecondLocation() != null) {
             List<Content> hovers = new ArrayList<>();
-            String length = (setupRoomPlayer.isLengthAllowed() ? getLevel(TipLevel.SUCCESS) : getLevel(TipLevel.WARNING)) + setupRoomPlayer.getRegion().getLength();
-            String width = (setupRoomPlayer.isWidthAllowed() ? getLevel(TipLevel.SUCCESS) : getLevel(TipLevel.WARNING)) + setupRoomPlayer.getRegion().getWidth();
-            String height = getLevel(TipLevel.SUCCESS) + setupRoomPlayer.getRegion().getHeight();
+            String length = (setupPlayer.isLengthAllowed() ? getLevel(TipLevel.SUCCESS) : getLevel(TipLevel.WARNING)) + setupPlayer.getRegion().getLength();
+            String width = (setupPlayer.isWidthAllowed() ? getLevel(TipLevel.SUCCESS) : getLevel(TipLevel.WARNING)) + setupPlayer.getRegion().getWidth();
+            String height = getLevel(TipLevel.SUCCESS) + setupPlayer.getRegion().getHeight();
 
             hovers.add(new Text(LangManager.getLang("setup-location-hover-size", length, width, height)));
 
@@ -124,7 +124,7 @@ public class SetupTip {
     private ArrayList<TextComponent> getRegionButton() {
         ArrayList<TextComponent> lines = new ArrayList<>();
         TextComponent saveButton;
-        if (setupRoomPlayer.canSaveRegion()) {
+        if (setupPlayer.canSaveRegion()) {
             saveButton = new TextComponent(getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-save-region-button"));
             saveButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-room save-region"));
         } else {
@@ -164,21 +164,21 @@ public class SetupTip {
             components[i] = lines.get(i);
         }
 
-        setupRoomPlayer.getPlayer().spigot().sendMessage(components);
+        setupPlayer.getPlayer().spigot().sendMessage(components);
     }
 
     private TextComponent getIDInfo(String line) {
-        line = line.replace("%id-info%", LangManager.getLang("setup-door-id-status", setupRoomPlayer.getId()));
+        line = line.replace("%id-info%", LangManager.getLang("setup-door-id-status", setupPlayer.getId()));
 
         return new TextComponent(line);
     }
 
     private ArrayList<TextComponent> getDoorsStatus() {
         ArrayList<TextComponent> lines = new ArrayList<>();
-        TextComponent status = new TextComponent(LangManager.getLang("setup-door-status", setupRoomPlayer.getDoors().size() + ""));
+        TextComponent status = new TextComponent(LangManager.getLang("setup-door-status", setupPlayer.getDoors().size() + ""));
         lines.add(status);
 
-        for (Door door : setupRoomPlayer.getDoors()) {
+        for (Door door : setupPlayer.getDoors()) {
             TextComponent doorText = new TextComponent(LangManager.getLang(
                     "setup-door-location-format",
                     String.valueOf(door.getLocation().getBlockX()),
@@ -190,7 +190,7 @@ public class SetupTip {
                     LangManager.getLang("setup-door-location-hover",
                             String.valueOf(door.getX()),
                             String.valueOf(door.getZ()),
-                            String.valueOf(setupRoomPlayer.getYOffset()),
+                            String.valueOf(setupPlayer.getYOffset()),
                             door.getType().toString()
                     )
             )));
@@ -210,7 +210,7 @@ public class SetupTip {
     private ArrayList<TextComponent> getDoorsButton() {
         ArrayList<TextComponent> lines = new ArrayList<>();
         TextComponent saveButton;
-        if (!setupRoomPlayer.getDoors().isEmpty()) {
+        if (!setupPlayer.getDoors().isEmpty()) {
             saveButton = new TextComponent(getLevel(TipLevel.SUCCESS) + LangManager.getLang("setup-save-doors-button"));
             saveButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-room save-doors"));
         } else {
@@ -221,7 +221,7 @@ public class SetupTip {
         lines.add(new TextComponent(LangManager.getLang("setup-complete-button-split")));
         // 清除所有门
         TextComponent clearButton;
-        if (!setupRoomPlayer.getDoors().isEmpty()) {
+        if (!setupPlayer.getDoors().isEmpty()) {
             clearButton = new TextComponent(getLevel(TipLevel.WARNING) + LangManager.getLang("setup-clear-doors-button"));
             clearButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-room clear-doors"));
         } else {

@@ -1,6 +1,7 @@
 # 配置
-setup-region-stick-name: "&a配置选区棒"
+setup-room-region-stick-name: "&a配置房间选区棒"
 setup-doors-stick-name: "&e配置门棒"
+setup-road-region-stick-name: "&a配置走廊选区棒"
 
 setup-region-tip: |-
   

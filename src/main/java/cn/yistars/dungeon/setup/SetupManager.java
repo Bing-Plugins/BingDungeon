@@ -1,4 +1,4 @@
-package cn.yistars.dungeon.setup.room;
+package cn.yistars.dungeon.setup;
 
 import de.tr7zw.changeme.nbtapi.NBT;
 import org.bukkit.entity.Player;
@@ -7,11 +7,11 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class SetupRoomManager {
-    public static HashMap<UUID, SetupRoomPlayer> setupPlayers = new HashMap<>();
+public class SetupManager {
+    public static HashMap<UUID, SetupPlayer> setupPlayers = new HashMap<>();
 
     public static void addSetupPlayer(Player player) {
-        setupPlayers.put(player.getUniqueId(), new SetupRoomPlayer(player));
+        setupPlayers.put(player.getUniqueId(), new SetupPlayer(player));
     }
 
     public static void removeSetupPlayer(Player player) {
@@ -19,7 +19,7 @@ public class SetupRoomManager {
         setupPlayers.get(player.getUniqueId()).cancel();
     }
 
-    public static SetupRoomPlayer getSetupPlayer(Player player) {
+    public static SetupPlayer getSetupPlayer(Player player) {
         return setupPlayers.get(player.getUniqueId());
     }
 
