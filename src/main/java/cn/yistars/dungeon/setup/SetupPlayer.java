@@ -280,7 +280,7 @@ public class SetupPlayer {
         BingDungeon.instance.Rooms.getConfig().set(id + ".unit", BingDungeon.instance.getConfig().getInt("unit-size"));
         BingDungeon.instance.Rooms.getConfig().set(id + ".type", roomType.toString());
 
-        BingDungeon.instance.Rooms.getConfig().getInt(id + ".y-offset", yOffset);
+        BingDungeon.instance.Rooms.getConfig().set(id + ".y-offset", yOffset);
         ArrayList<String> doorsList = new ArrayList<>();
         for (Door door : doors) {
             doorsList.add(door.getX() + "," + door.getZ() + "," + door.getType());

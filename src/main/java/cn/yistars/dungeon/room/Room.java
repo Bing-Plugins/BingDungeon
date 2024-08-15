@@ -28,6 +28,7 @@ public class Room {
     private final Clipboard clipboard;
     private final Rectangle marginRectangle;
     private final HashSet<Door> doors = new HashSet<>();
+    private final Integer yOffset;
 
     public Room(String id) {
         this.type = RoomType.valueOf(BingDungeon.instance.Rooms.getConfig().getString(id + ".type", "NORMAL").toUpperCase());
@@ -41,6 +42,7 @@ public class Room {
                 rectangle.width + BingDungeon.instance.getConfig().getInt("unit-margin") * 2,
                 rectangle.height + BingDungeon.instance.getConfig().getInt("unit-margin") * 2
         );
+        this.yOffset = BingDungeon.instance.Rooms.getConfig().getInt(id + ".y-offset");
 
         File file = BingDungeon.instance.getDataFolder().toPath().resolve("rooms/" + id + ".schem").toFile();
         ClipboardFormat format = ClipboardFormats.findByFile(file);
@@ -60,7 +62,7 @@ public class Room {
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(world)) {
             Operation operation = new ClipboardHolder(clipboard)
                     .createPaste(editSession)
-                    .to(BlockVector3.at(rectangle.x * BingDungeon.instance.getConfig().getInt("unit-size"), 100, rectangle.y * BingDungeon.instance.getConfig().getInt("unit-size")))
+                    .to(BlockVector3.at(rectangle.x * BingDungeon.instance.getConfig().getInt("unit-size"), 100 - yOffset, rectangle.y * BingDungeon.instance.getConfig().getInt("unit-size")))
                     .build();
             Operations.complete(operation);
         }
