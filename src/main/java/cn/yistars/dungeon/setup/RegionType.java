@@ -1,6 +1,6 @@
 package cn.yistars.dungeon.setup;
 
-public enum SetupType {
+public enum RegionType {
     ROOM,
     ROAD
 }

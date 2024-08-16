@@ -11,11 +11,11 @@ public class SetupManager {
     public static HashMap<UUID, SetupPlayer> setupPlayers = new HashMap<>();
 
     public static void addSetupRoomPlayer(Player player) {
-        setupPlayers.put(player.getUniqueId(), new SetupPlayer(player, SetupType.ROOM));
+        setupPlayers.put(player.getUniqueId(), new SetupPlayer(player, RegionType.ROOM));
     }
 
     public static void addSetupRoadPlayer(Player player) {
-        setupPlayers.put(player.getUniqueId(), new SetupPlayer(player, SetupType.ROAD));
+        setupPlayers.put(player.getUniqueId(), new SetupPlayer(player, RegionType.ROAD));
     }
 
     public static void removeSetupPlayer(Player player) {

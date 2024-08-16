@@ -37,7 +37,7 @@ public class SetupPlayer {
     private final SetupTip setupTip;
     @Setter
     private String id;
-    private final SetupType setupType;
+    private final RegionType regionType;
     @Setter
     private RoomType roomType;
     private Location firstLocation, secondLocation;
@@ -45,9 +45,9 @@ public class SetupPlayer {
     private final HashSet<SetupDoor> doors = new HashSet<>();
     private Integer yOffset = -1;
 
-    public SetupPlayer(Player player, SetupType setupType) {
+    public SetupPlayer(Player player, RegionType regionType) {
         this.player = player;
-        this.setupType = setupType;
+        this.regionType = regionType;
 
         this.setupTip = new SetupTip(this);
 
@@ -215,7 +215,7 @@ public class SetupPlayer {
     }
 
     public boolean canSaveRegion() {
-        switch(setupType) {
+        switch(regionType) {
             case ROOM:
                 return firstLocation != null && secondLocation != null && roomType != null && id != null && firstLocation.getWorld().equals(secondLocation.getWorld()) && isAllowSize();
             case ROAD:
@@ -233,7 +233,7 @@ public class SetupPlayer {
     public boolean isAllowSize() {
         if (region == null) return true;
         // 判断 region 的宽高是否都整除 7
-        switch (setupType) {
+        switch (regionType) {
             case ROOM:
                 return region.getWidth() % BingDungeon.instance.getConfig().getInt("unit-size") == 0 && region.getLength() % BingDungeon.instance.getConfig().getInt("unit-size") == 0;
             case ROAD:
@@ -286,7 +286,7 @@ public class SetupPlayer {
         // 保存
         File file;
 
-        switch (setupType) {
+        switch (regionType) {
             case ROOM:
                 file = BingDungeon.instance.getDataFolder().toPath().resolve("rooms/" + id + ".schem").toFile();
                 break;
@@ -304,7 +304,7 @@ public class SetupPlayer {
         }
 
         // 保存到配置文件
-        switch(setupType) {
+        switch(regionType) {
             case ROOM:
                 BingDungeon.instance.Rooms.getConfig().set(id + ".width", region.getWidth() / BingDungeon.instance.getConfig().getInt("unit-size"));
                 BingDungeon.instance.Rooms.getConfig().set(id + ".length", region.getLength() / BingDungeon.instance.getConfig().getInt("unit-size"));
@@ -336,8 +336,8 @@ public class SetupPlayer {
         }
 
         // 保存提示
-        TextComponent textComponent = new TextComponent(LangManager.getLang("setup-" + setupType.toString().toLowerCase() + "-save-success-msg", id));
-        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-" + setupType.toString().toLowerCase()));
+        TextComponent textComponent = new TextComponent(LangManager.getLang("setup-" + regionType.toString().toLowerCase() + "-save-success-msg", id));
+        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingdungeon setup-" + regionType.toString().toLowerCase()));
         player.spigot().sendMessage(textComponent);
 
         cancel();
