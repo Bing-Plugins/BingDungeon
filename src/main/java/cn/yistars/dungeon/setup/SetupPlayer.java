@@ -3,8 +3,8 @@ package cn.yistars.dungeon.setup;
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.config.LangManager;
 import cn.yistars.dungeon.room.RoomType;
-import cn.yistars.dungeon.room.door.Door;
 import cn.yistars.dungeon.room.door.DoorType;
+import cn.yistars.dungeon.room.door.SetupDoor;
 import cn.yistars.dungeon.setup.tip.SetupTip;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
@@ -42,7 +42,7 @@ public class SetupPlayer {
     private RoomType roomType;
     private Location firstLocation, secondLocation;
     private CuboidRegion region;
-    private final HashSet<Door> doors = new HashSet<>();
+    private final HashSet<SetupDoor> doors = new HashSet<>();
     private Integer yOffset = -1;
 
     public SetupPlayer(Player player, SetupType setupType) {
@@ -181,7 +181,8 @@ public class SetupPlayer {
             return false;
         }
 
-        doors.add(new Door(doorType, doorX, doorZ, location));
+        doors.add(new SetupDoor(doorType, finalDoorX, finalDoorZ, location));
+
         return true;
     }
 
@@ -312,7 +313,7 @@ public class SetupPlayer {
 
                 BingDungeon.instance.Rooms.getConfig().set(id + ".y-offset", yOffset);
                 ArrayList<String> doorsList = new ArrayList<>();
-                for (Door door : doors) {
+                for (SetupDoor door : doors) {
                     doorsList.add(door.getX() + "," + door.getZ() + "," + door.getType());
                 }
                 BingDungeon.instance.Rooms.getConfig().set(id + ".doors", doorsList);
@@ -323,7 +324,7 @@ public class SetupPlayer {
                 BingDungeon.instance.Roads.getConfig().set(id + ".unit", BingDungeon.instance.getConfig().getInt("unit-size"));
                 BingDungeon.instance.Roads.getConfig().set(id + ".y-offset", yOffset);
                 ArrayList<String> facingList = new ArrayList<>();
-                for (Door door : doors) {
+                for (SetupDoor door : doors) {
                     facingList.add(String.valueOf(door.getType()));
                 }
                 BingDungeon.instance.Roads.getConfig().set(id + ".facing", facingList);

@@ -2,7 +2,7 @@ package cn.yistars.dungeon.setup.tip;
 
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.config.LangManager;
-import cn.yistars.dungeon.room.door.Door;
+import cn.yistars.dungeon.room.door.SetupDoor;
 import cn.yistars.dungeon.setup.SetupPlayer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -190,7 +190,7 @@ public class SetupTip {
         TextComponent status = new TextComponent(LangManager.getLang("setup-" + setupPlayer.getSetupType().toString().toLowerCase() + "-door-status", String.valueOf(setupPlayer.getDoors().size())));
         lines.add(status);
 
-        for (Door door : setupPlayer.getDoors()) {
+        for (SetupDoor door : setupPlayer.getDoors()) {
             TextComponent doorText = new TextComponent(LangManager.getLang(
                     "setup-" + setupPlayer.getSetupType().toString().toLowerCase() + "-door-location-format",
                     String.valueOf(door.getLocation().getBlockX()),

@@ -1,19 +1,18 @@
 package cn.yistars.dungeon.room.door;
 
+import cn.yistars.dungeon.room.Room;
 import lombok.Getter;
-import org.bukkit.Location;
 
 @Getter
 public class Door {
     private final DoorType type;
     private final int x, z;
-    private final Location location;
+    private final Room room;
 
-    public Door(DoorType type, int x, int z, Location location) {
+    public Door(Room room, DoorType type, int x, int z) {
+        this.room = room;
         this.type = type;
         this.x = x;
         this.z = z;
-        this.location = location;
     }
-
 }
