@@ -109,6 +109,7 @@ public class Room {
         }.runTaskTimerAsynchronously(BingDungeon.instance, 0, 5);
     }
 
+    // TODO 测试用
     public boolean contains(Location location) {
         return rectangle.contains(location.getBlockX() / BingDungeon.instance.getConfig().getInt("unit-size"), location.getBlockZ() / BingDungeon.instance.getConfig().getInt("unit-size"));
     }

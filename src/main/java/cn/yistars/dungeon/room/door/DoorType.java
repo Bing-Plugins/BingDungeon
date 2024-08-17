@@ -4,5 +4,20 @@ public enum DoorType {
     NORTH,
     SOUTH,
     EAST,
-    WEST
+    WEST;
+
+    public DoorType getOpposite() {
+        switch (this) {
+            case NORTH:
+                return SOUTH;
+            case SOUTH:
+                return NORTH;
+            case EAST:
+                return WEST;
+            case WEST:
+                return EAST;
+            default:
+                throw new IllegalArgumentException("Unknown DoorType: " + this);
+        }
+    }
 }

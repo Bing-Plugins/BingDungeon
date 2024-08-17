@@ -6,6 +6,7 @@ import cn.yistars.dungeon.room.Room;
 import cn.yistars.dungeon.room.RectangleSeparator;
 import cn.yistars.dungeon.room.door.Door;
 import cn.yistars.dungeon.room.door.DoorType;
+import cn.yistars.dungeon.setup.RegionType;
 import com.infernalsuite.aswm.api.world.SlimeWorld;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
@@ -49,6 +50,7 @@ public class Arena {
                 initRoom();
                 spawnRoom();
                 initDoor();
+                initRoad();
                 spawnRoad();
             }
         }.runTaskAsynchronously(BingDungeon.instance);
@@ -96,6 +98,31 @@ public class Arena {
         }
     }
 
+    public RegionType getType(int x, int y) {
+        for (Room room : rooms) {
+            if (room.getRectangle().contains(x, y)) {
+                return RegionType.ROOM;
+            }
+        }
+
+        for (Road road : roads) {
+            if (road.getRectangle().contains(x, y)) {
+                return RegionType.ROAD;
+            }
+        }
+
+        return null;
+    }
+
+    public Room getRoom(int x, int y) {
+        for (Room room : rooms) {
+            if (room.getRectangle().contains(x, y)) {
+                return room;
+            }
+        }
+        return null;
+    }
+
     private void initDoor() {
         for (Room room : rooms) {
             room.initDoors();
@@ -112,11 +139,18 @@ public class Arena {
         return "空区域";
     }
 
+    private void spawnRoad() {
+        for (Road road : roads) {
+            road.initFacing(this);
+            road.pasting(BukkitAdapter.adapt(world));
+        }
+    }
+
     /*
         TODO 以下内容为实验性内容，存在较大问题，如：断头路，绕着房间跑，怼到房间墙壁的断头路
      */
 
-    private void spawnRoad() {
+    private void initRoad() {
         // 连接所有房间的 Door, 获取连接点的坐标
         generatePaths();
     }
@@ -163,14 +197,14 @@ public class Arena {
         }
 
         removeIsolatedRoads();
-        simplifyParallelRoads();
+        //simplifyParallelRoads();
     }
 
     private Road createInitialRoadForDoor(Door door) {
         int[] direction = getDirection(door.getType());
         int x = door.getX() + direction[0];
         int z = door.getZ() + direction[1];
-        Road road = new Road("road");
+        Road road = new Road();
         road.setPosition(x, z);
 
         Road nearestRoad = findNearestRoad(road);
@@ -178,7 +212,6 @@ public class Arena {
             createRoadBetween(road, nearestRoad);
         }
 
-        road.pasting(BukkitAdapter.adapt(world));
         roads.add(road);
         return road;
     }
@@ -234,9 +267,8 @@ public class Arena {
         if (x1 != x2) {
             for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
                 if (isValidRoad(x, z1)) {
-                    Road road = new Road("road");
+                    Road road = new Road();
                     road.setPosition(x, z1);
-                    road.pasting(BukkitAdapter.adapt(world));
                     roads.add(road);
                 }
             }
@@ -245,9 +277,8 @@ public class Arena {
         if (z1 != z2) {
             for (int z = Math.min(z1, z2); z <= Math.max(z1, z2); z++) {
                 if (isValidRoad(x2, z)) {
-                    Road road = new Road("road");
+                    Road road = new Road();
                     road.setPosition(x2, z);
-                    road.pasting(BukkitAdapter.adapt(world));
                     roads.add(road);
                 }
             }

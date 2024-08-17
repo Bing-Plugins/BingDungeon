@@ -1,6 +1,11 @@
 package cn.yistars.dungeon.road;
 
 import cn.yistars.dungeon.BingDungeon;
+import cn.yistars.dungeon.arena.Arena;
+import cn.yistars.dungeon.room.Room;
+import cn.yistars.dungeon.room.door.Door;
+import cn.yistars.dungeon.room.door.DoorType;
+import cn.yistars.dungeon.setup.RegionType;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
@@ -18,15 +23,49 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashSet;
 
 @Getter
 public class Road {
     private final Rectangle rectangle;
-    private final Clipboard clipboard;
-    private final Integer yOffset;
+    private Clipboard clipboard;
+    private Integer yOffset;
+    private HashSet<DoorType> facings = new HashSet<>();
 
-    public Road(String id) {
+    public Road() {
         this.rectangle = new Rectangle(0, 0, 1, 1);
+    }
+
+    public void initFacing(Arena arena) {
+        // 获取东南西北有无 Door 或 Road
+        checkFacing(arena, rectangle.x + 1, rectangle.y, DoorType.NORTH);
+        checkFacing(arena, rectangle.x, rectangle.y + 1, DoorType.EAST);
+        checkFacing(arena, rectangle.x - 1, rectangle.y, DoorType.SOUTH);
+        checkFacing(arena, rectangle.x, rectangle.y - 1, DoorType.WEST);
+
+        // 决定 ID
+        setID("road");
+    }
+
+    private void checkFacing(Arena arena, int x, int y, DoorType facing) {
+        RegionType regionType = arena.getType(x, y);
+        if (regionType == null) return;
+
+        switch (regionType) {
+            case ROAD:
+                facings.add(facing);
+                break;
+            case ROOM:
+                Room room = arena.getRoom(x, y);
+                for (Door door : room.getDoors()) {
+                    if (!door.getType().equals(facing.getOpposite())) continue;
+                    if (door.getX() == x && door.getZ() == y) facings.add(facing);
+                }
+                break;
+        }
+    }
+
+    private void setID(String id) {
         this.yOffset = BingDungeon.instance.Roads.getConfig().getInt(id + ".y-offset");
 
         File file = BingDungeon.instance.getDataFolder().toPath().resolve("roads/" + id + ".schem").toFile();
