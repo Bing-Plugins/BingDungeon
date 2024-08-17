@@ -13,6 +13,7 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.World;
 import lombok.Getter;
@@ -30,8 +31,8 @@ import java.util.HashSet;
 public class Room {
     private final String id;
     private final RoomType type;
-    private final Rectangle rectangle;
-    private final Clipboard clipboard;
+    private Rectangle rectangle;
+    private Clipboard clipboard;
     private final Rectangle marginRectangle;
     private final HashSet<Door> doors = new HashSet<>();
     private final Integer yOffset;
@@ -58,6 +59,38 @@ public class Room {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        rotate(90);
+    }
+
+    // 旋转
+    public void rotate(int angle) {
+        int x = rectangle.x;
+        int y = rectangle.y;
+        int width = rectangle.width;
+        int height = rectangle.height;
+
+        switch (angle) {
+            case 90:
+                // 旋转 90 度
+                this.rectangle = new Rectangle(-y, x, height, width);
+                break;
+            case 180:
+                // 旋转 180 度
+                this.rectangle = new Rectangle(-x, -y, width, height);
+                break;
+            case 270:
+                // 旋转 270 度
+                this.rectangle = new Rectangle(y, -x, height, width);
+                break;
+            default:
+                throw new IllegalArgumentException("Angle must be 90, 180, or 270 degrees.");
+        }
+
+        // 旋转 clipboard
+        ClipboardHolder holder = new ClipboardHolder(clipboard);
+        holder.setTransform(new AffineTransform().rotateY(angle));
+        clipboard = holder.getClipboard();
     }
 
     public void initDoors() {
