@@ -60,7 +60,7 @@ public class Room {
             throw new RuntimeException(e);
         }
 
-        rotate(90);
+        // rotate(90);
     }
 
     // 旋转
