@@ -44,7 +44,23 @@ public class Road {
         checkFacing(arena, rectangle.x, rectangle.y - 1, DoorType.WEST);
 
         // 决定 ID
-        setID("road");
+        for (String key : BingDungeon.instance.Roads.getConfig().getConfigurationSection("").getKeys(false)) {
+            if (facings.size() != BingDungeon.instance.Roads.getConfig().getStringList(key + ".facings").size()) continue;
+            boolean match = true;
+            for (DoorType facing : facings) {
+                if (!BingDungeon.instance.Roads.getConfig().getStringList(key + ".facings").contains(facing.toString())) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                setID(key);
+                return;
+            }
+        }
+        // 否则默认
+        System.out.println("默认走廊: " + facings);
+        setID(BingDungeon.instance.getConfig().getString("default-road"));
     }
 
     private void checkFacing(Arena arena, int x, int y, DoorType facing) {
