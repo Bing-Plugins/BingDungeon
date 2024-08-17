@@ -112,6 +112,10 @@ public class Arena {
         return "空区域";
     }
 
+    /*
+        TODO 以下内容为实验性内容，存在较大问题，如：断头路，绕着房间跑，怼到房间墙壁的断头路
+     */
+
     private void spawnRoad() {
         // 连接所有房间的 Door, 获取连接点的坐标
         generatePaths();
