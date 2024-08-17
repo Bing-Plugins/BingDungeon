@@ -3,8 +3,9 @@ setup-mode: false
 
 # 房间单位，需要整除此数
 unit-size: 7
-
 unit-margin: 1
+
+default-road: "road"
 
 # 地图名称
 slime-world:
