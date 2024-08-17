@@ -27,7 +27,7 @@ public class Road {
 
     public Road(String id) {
         this.rectangle = new Rectangle(0, 0, 1, 1);
-        this.yOffset = BingDungeon.instance.Rooms.getConfig().getInt(id + ".y-offset");
+        this.yOffset = BingDungeon.instance.Roads.getConfig().getInt(id + ".y-offset");
 
         File file = BingDungeon.instance.getDataFolder().toPath().resolve("roads/" + id + ".schem").toFile();
         ClipboardFormat format = ClipboardFormats.findByFile(file);
