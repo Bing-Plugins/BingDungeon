@@ -133,7 +133,7 @@ public class Arena {
     public String getRoom(Location location) {
         for (Room room : rooms) {
             if (room.contains(location)) {
-                return room.getId();
+                return room.getId() + " (" + room.getAngle() + "° 旋转)";
             }
         }
         return "空区域";
