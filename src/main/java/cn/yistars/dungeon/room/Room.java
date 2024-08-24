@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Random;
 
 @Getter
 public class Room {
@@ -36,6 +37,7 @@ public class Room {
     private final Rectangle marginRectangle;
     private final HashSet<Door> doors = new HashSet<>();
     private final Integer yOffset;
+    private final Integer angle;
 
     public Room(String id) {
         this.id = id;
@@ -60,49 +62,63 @@ public class Room {
             throw new RuntimeException(e);
         }
 
-        // rotate(90);
+        // 随机从 0，90，180，270 选择一个设置为 angle
+        int[] angles = {0, 90, 180, 270};
+        this.angle = angles[new Random().nextInt(angles.length)];
+
+        rotate();
     }
 
     // 旋转
-    public void rotate(int angle) {
-        int x = rectangle.x;
-        int y = rectangle.y;
+    private void rotate() {
         int width = rectangle.width;
         int height = rectangle.height;
 
-        switch (angle) {
-            case 90:
+        switch (this.angle) {
+            case 90: case 270:
                 // 旋转 90 度
-                this.rectangle = new Rectangle(-y, x, height, width);
+                this.rectangle = new Rectangle(rectangle.x, rectangle.y, height, width);
                 break;
-            case 180:
-                // 旋转 180 度
-                this.rectangle = new Rectangle(-x, -y, width, height);
-                break;
-            case 270:
-                // 旋转 270 度
-                this.rectangle = new Rectangle(y, -x, height, width);
-                break;
-            default:
-                throw new IllegalArgumentException("Angle must be 90, 180, or 270 degrees.");
         }
 
         // 旋转 clipboard
-        ClipboardHolder holder = new ClipboardHolder(clipboard);
-        holder.setTransform(new AffineTransform().rotateY(angle));
-        clipboard = holder.getClipboard();
+        clipboard = clipboard.transform(new AffineTransform().rotateY(this.angle));
+        clipboard.setOrigin(clipboard.getMinimumPoint());
     }
 
     public void initDoors() {
         for (String doorText : BingDungeon.instance.Rooms.getConfig().getStringList(id + ".doors")) {
             String[] doorInfo = doorText.split(",");
             if (doorInfo.length != 3) continue;
-            int x = Integer.parseInt(doorInfo[0]) + rectangle.x;
-            int z = Integer.parseInt(doorInfo[1]) + rectangle.y;
+            int x = Integer.parseInt(doorInfo[0]);
+            int z = Integer.parseInt(doorInfo[1]);
             DoorType type = DoorType.valueOf(doorInfo[2].toUpperCase());
 
-            doors.add(new Door(this, type, x, z));
+            doors.add(getDoor(this.angle, x, z, type));
         }
+    }
+
+    private Door getDoor(int angle, int x, int z, DoorType doorType) {
+        int doorX, doorZ;
+
+        switch (angle) {
+            case 90:
+                doorX = z;
+                doorZ = -x + rectangle.height - 1;
+                break;
+            case 180:
+                doorX = -x + rectangle.width - 1;
+                doorZ = -z + rectangle.height - 1;
+                break;
+            case 270:
+                doorX = -z + rectangle.width - 1;
+                doorZ = x;
+                break;
+            default:
+                doorX = x;
+                doorZ = z;
+        }
+        return new Door(this, doorType.rotate(angle), rectangle.x + doorX, rectangle.y + doorZ);
     }
 
     public void setPosition(int x, int y) {

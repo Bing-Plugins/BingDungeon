@@ -58,8 +58,8 @@ public class Road {
                 return;
             }
         }
-        // 否则默认
-        System.out.println("默认走廊: " + facings);
+        // TODO 否则默认
+        //System.out.println("默认走廊: " + facings);
         setID(BingDungeon.instance.getConfig().getString("default-road"));
     }
 
