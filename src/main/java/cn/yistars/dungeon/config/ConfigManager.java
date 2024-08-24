@@ -2,6 +2,7 @@ package cn.yistars.dungeon.config;
 
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.arena.ArenaManager;
+import cn.yistars.dungeon.road.RoadManager;
 
 public class ConfigManager {
     public static void loadConfig() {
@@ -19,5 +20,7 @@ public class ConfigManager {
         BingDungeon.instance.getDataFolder().toPath().resolve("roads").toFile().mkdir();
 
         ArenaManager.initArena();
+
+        RoadManager.initRoadFiles();
     }
 }

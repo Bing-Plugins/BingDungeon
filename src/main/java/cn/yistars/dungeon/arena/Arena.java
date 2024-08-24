@@ -40,7 +40,7 @@ public class Arena {
                     }
                 }
             }
-        }.runTaskTimerAsynchronously(BingDungeon.instance, 0, 20);
+        }.runTaskTimerAsynchronously(BingDungeon.instance, 0, 10);
     }
 
     private void nextStep() {
@@ -98,7 +98,7 @@ public class Arena {
         }
     }
 
-    public RegionType getType(int x, int y) {
+    public RegionType getType(double x, double y) {
         for (Room room : rooms) {
             if (room.getRectangle().contains(x, y)) {
                 return RegionType.ROOM;
@@ -114,7 +114,7 @@ public class Arena {
         return null;
     }
 
-    public Room getRoom(int x, int y) {
+    public Room getRoom(double x, double y) {
         for (Room room : rooms) {
             if (room.getRectangle().contains(x, y)) {
                 return room;
@@ -133,7 +133,13 @@ public class Arena {
     public String getRoom(Location location) {
         for (Room room : rooms) {
             if (room.contains(location)) {
-                return room.getId() + " (" + room.getAngle() + "° 旋转)";
+                return room.getId() + " (" + room.getAngle() + "° 旋转) :" + (int) location.getX() / 7 + ", " + (int) location.getZ() / 7;
+            }
+        }
+
+        for (Road road : roads) {
+            if (road.contains(location)) {
+                return "走廊 " + road.getFacings() + ": " + (int) location.getX() / 7 + ", " + (int) location.getZ() / 7;
             }
         }
         return "空区域";

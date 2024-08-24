@@ -34,7 +34,7 @@ public class Room {
     private final RoomType type;
     private Rectangle rectangle;
     private Clipboard clipboard;
-    private final Rectangle marginRectangle;
+    private Rectangle marginRectangle;
     private final HashSet<Door> doors = new HashSet<>();
     private final Integer yOffset;
     private final Integer angle;
@@ -78,6 +78,12 @@ public class Room {
             case 90: case 270:
                 // 旋转 90 度
                 this.rectangle = new Rectangle(rectangle.x, rectangle.y, height, width);
+                this.marginRectangle = new Rectangle(
+                        rectangle.x,
+                        rectangle.y,
+                        height + BingDungeon.instance.getConfig().getInt("unit-margin") * 2,
+                        width + BingDungeon.instance.getConfig().getInt("unit-margin") * 2
+                );
                 break;
         }
 
