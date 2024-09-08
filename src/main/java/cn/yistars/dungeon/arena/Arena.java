@@ -5,11 +5,11 @@ import cn.yistars.dungeon.road.Road;
 import cn.yistars.dungeon.room.Room;
 import cn.yistars.dungeon.room.RectangleSeparator;
 import cn.yistars.dungeon.room.door.Door;
-import cn.yistars.dungeon.room.door.DoorType;
 import cn.yistars.dungeon.setup.RegionType;
 import com.infernalsuite.aswm.api.world.SlimeWorld;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
+import lombok.Getter;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -22,6 +22,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+@Getter
 public class Arena {
     private final List<Room> rooms = new ArrayList<>();
     private final List<Road> roads = new ArrayList<>();
@@ -146,240 +147,197 @@ public class Arena {
     }
 
     private void spawnRoad() {
+        System.out.println("生成道路");
         for (Road road : roads) {
             road.initFacing(this);
             road.pasting(BukkitAdapter.adapt(world));
         }
     }
 
-    /*
-        TODO 以下内容为实验性内容，存在较大问题，如：断头路，绕着房间跑，怼到房间墙壁的断头路
-     */
+    public HashSet<Rectangle> getRectangles() {
+        HashSet<Rectangle> rectangles = new HashSet<>();
+        for (Room room : rooms) {
+            rectangles.add(room.getRectangle());
+        }
+        return rectangles;
+    }
 
     private void initRoad() {
-        // 连接所有房间的 Door, 获取连接点的坐标
-        generatePaths();
-    }
-
-    public void generatePaths() {
-        Map<Door, Road> doorToRoadMap = new HashMap<>();
+        List<Door> allDoors = new ArrayList<>();
         for (Room room : rooms) {
-            for (Door door : room.getDoors()) {
-                Road road = createInitialRoadForDoor(door);
-                doorToRoadMap.put(door, road);
+            allDoors.addAll(room.getDoors());
+        }
+
+        // Step 1: Calculate all distances between doors
+        List<Edge> edges = new ArrayList<>();
+        for (int i = 0; i < allDoors.size(); i++) {
+            for (int j = i + 1; j < allDoors.size(); j++) {
+                Door door1 = allDoors.get(i);
+                Door door2 = allDoors.get(j);
+                if (door1.getRoom() != door2.getRoom()) {
+                    double distance = door1.getPoint().distance(door2.getPoint());
+                    edges.add(new Edge(door1, door2, distance));
+                }
             }
         }
 
-        Map<Door, Map<Door, Integer>> graph = buildGraph(doorToRoadMap);
+        // Step 2: Use Kruskal's algorithm to find the Minimum Spanning Tree (MST)
+        Collections.sort(edges);
+        UnionFind unionFind = new UnionFind(allDoors.size());
+        for (Edge edge : edges) {
+            int root1 = unionFind.find(allDoors.indexOf(edge.door1));
+            int root2 = unionFind.find(allDoors.indexOf(edge.door2));
+            if (root1 != root2) {
+                unionFind.union(root1, root2);
+                createRoad(edge.door1, edge.door2);
+            }
+        }
+    }
 
-        Set<Door> visited = new HashSet<>();
-        PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparingInt(e -> e.weight));
+    private void createRoad(Door door1, Door door2) {
+        Point p1 = door1.getPoint();
+        Point p2 = door2.getPoint();
+        List<Point> path = findPath(getRectangles(), p1, p2);
 
-        Door start = graph.keySet().iterator().next();
-        visited.add(start);
-        for (Map.Entry<Door, Integer> entry : graph.get(start).entrySet()) {
-            pq.add(new Edge(start, entry.getKey(), entry.getValue()));
+        for (int i = 0; i < path.size() - 1; i++) {
+            Point start = path.get(i);
+            Point end = path.get(i + 1);
+            Road road = new Road();
+            road.setPosition(start.x, start.y);
+            roads.add(road);
+        }
+    }
+
+    private class Edge implements Comparable<Edge> {
+        Door door1, door2;
+        double distance;
+
+        Edge(Door door1, Door door2, double distance) {
+            this.door1 = door1;
+            this.door2 = door2;
+            this.distance = distance;
         }
 
-        while (!pq.isEmpty()) {
-            Edge edge = pq.poll();
-            if (!visited.contains(edge.to) && !isSameRoom(edge.from, edge.to)) {
-                visited.add(edge.to);
-                createRoadBetween(doorToRoadMap.get(edge.from), doorToRoadMap.get(edge.to));
+        @Override
+        public int compareTo(Edge other) {
+            return Double.compare(this.distance, other.distance);
+        }
+    }
 
-                for (Map.Entry<Door, Integer> entry : graph.get(edge.to).entrySet()) {
-                    if (!visited.contains(entry.getKey())) {
-                        pq.add(new Edge(edge.to, entry.getKey(), entry.getValue()));
+    private class UnionFind {
+        private int[] parent, rank;
+
+        UnionFind(int size) {
+            parent = new int[size];
+            rank = new int[size];
+            for (int i = 0; i < size; i++) {
+                parent[i] = i;
+                rank[i] = 0;
+            }
+        }
+
+        int find(int p) {
+            if (parent[p] != p) {
+                parent[p] = find(parent[p]);
+            }
+            return parent[p];
+        }
+
+        void union(int p, int q) {
+            int rootP = find(p);
+            int rootQ = find(q);
+            if (rootP != rootQ) {
+                if (rank[rootP] > rank[rootQ]) {
+                    parent[rootQ] = rootP;
+                } else if (rank[rootP] < rank[rootQ]) {
+                    parent[rootP] = rootQ;
+                } else {
+                    parent[rootQ] = rootP;
+                    rank[rootP]++;
+                }
+            }
+        }
+    }
+
+    // A*路径查找方法
+    public ArrayList<Point> findPath(HashSet<Rectangle> rectangles, Point p1, Point p2) {
+        ArrayList<Point> resultPath = new ArrayList<>();
+        HashSet<Point> visited = new HashSet<>();
+        PriorityQueue<Node> openSet = new PriorityQueue<>();
+        Map<Point, Point> parentMap = new HashMap<>();
+
+        openSet.offer(new Node(p1, 0, manhattanDistance(p1, p2)));
+        parentMap.put(p1, null);
+
+        while (!openSet.isEmpty()) {
+            Node currentNode = openSet.poll();
+            Point current = currentNode.point;
+
+            if (current.equals(p2)) {
+                break;
+            }
+
+            visited.add(current);
+
+            for (Point neighbor : getNeighbors(current)) {
+                if (isValidPoint(neighbor, rectangles, visited)) {
+                    int tentativeGCost = currentNode.gCost + 1;
+                    Node neighborNode = new Node(neighbor, tentativeGCost, manhattanDistance(neighbor, p2));
+
+                    if (!parentMap.containsKey(neighbor) || tentativeGCost < neighborNode.gCost) {
+                        parentMap.put(neighbor, current);
+                        openSet.offer(neighborNode);
                     }
                 }
             }
         }
 
-        for (Door door : graph.keySet()) {
-            if (!visited.contains(door)) {
-                Road nearestRoad = findNearestRoad(doorToRoadMap.get(door));
-                createRoadBetween(doorToRoadMap.get(door), nearestRoad);
-            }
+        // 追踪路径
+        Point step = p2;
+        while (step != null && parentMap.containsKey(step)) {
+            resultPath.add(step);
+            step = parentMap.get(step);
         }
+        resultPath.add(p1); // 加入起始点
 
-        removeIsolatedRoads();
-        //simplifyParallelRoads();
+        return resultPath;
     }
 
-    private Road createInitialRoadForDoor(Door door) {
-        int[] direction = getDirection(door.getType());
-        int x = door.getX() + direction[0];
-        int z = door.getZ() + direction[1];
-        Road road = new Road();
-        road.setPosition(x, z);
-
-        Road nearestRoad = findNearestRoad(road);
-        if (nearestRoad != null && areAdjacent(road, nearestRoad)) {
-            createRoadBetween(road, nearestRoad);
-        }
-
-        roads.add(road);
-        return road;
+    // 计算曼哈顿距离（用于启发式函数）
+    private int manhattanDistance(Point p1, Point p2) {
+        return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
     }
 
-    private int[] getDirection(DoorType type) {
-        switch (type) {
-            case NORTH:
-                return new int[]{0, 1};
-            case SOUTH:
-                return new int[]{0, -1};
-            case EAST:
-                return new int[]{1, 0};
-            case WEST:
-                return new int[]{-1, 0};
-            default:
-                throw new IllegalArgumentException("Unknown DoorType: " + type);
-        }
-    }
-
-    private Map<Door, Map<Door, Integer>> buildGraph(Map<Door, Road> doorToRoadMap) {
-        Map<Door, Map<Door, Integer>> graph = new HashMap<>();
-
-        for (Room room : rooms) {
-            for (Door door1 : room.getDoors()) {
-                for (Room otherRoom : rooms) {
-                    if (room == otherRoom) continue;
-                    for (Door door2 : otherRoom.getDoors()) {
-                        int distance = calculateDistance(door1, door2);
-                        graph.computeIfAbsent(door1, k -> new HashMap<>()).put(door2, distance);
-                        graph.computeIfAbsent(door2, k -> new HashMap<>()).put(door1, distance);
-                    }
-                }
-            }
-        }
-
-        return graph;
-    }
-
-    private int calculateDistance(Door d1, Door d2) {
-        return Math.abs(d1.getX() - d2.getX()) + Math.abs(d1.getZ() - d2.getZ());
-    }
-
-    private void createRoadBetween(Road road1, Road road2) {
-        int x1 = road1.getRectangle().x;
-        int z1 = road1.getRectangle().y;
-        int x2 = road2.getRectangle().x;
-        int z2 = road2.getRectangle().y;
-
-        generateAndAddRoad(x1, z1, x2, z2);
-    }
-
-    private void generateAndAddRoad(int x1, int z1, int x2, int z2) {
-        if (x1 != x2) {
-            for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-                if (isValidRoad(x, z1)) {
-                    Road road = new Road();
-                    road.setPosition(x, z1);
-                    roads.add(road);
-                }
-            }
-        }
-
-        if (z1 != z2) {
-            for (int z = Math.min(z1, z2); z <= Math.max(z1, z2); z++) {
-                if (isValidRoad(x2, z)) {
-                    Road road = new Road();
-                    road.setPosition(x2, z);
-                    roads.add(road);
-                }
-            }
-        }
-    }
-
-    private boolean isValidRoad(int x, int z) {
-        for (Room room : rooms) {
-            Rectangle rect = room.getRectangle();
-            if (rect.contains(x, z)) {
-                return false;
-            }
+    private boolean isValidPoint(Point point, HashSet<Rectangle> rectangles, HashSet<Point> visited) {
+        if (visited.contains(point)) return false;
+        for (Rectangle rectangle : rectangles) {
+            if (rectangle.contains(point)) return false;
         }
         return true;
     }
 
-    private boolean isSameRoom(Door d1, Door d2) {
-        return d1.getRoom().equals(d2.getRoom());
+    private List<Point> getNeighbors(Point point) {
+        List<Point> neighbors = new ArrayList<>();
+        neighbors.add(new Point(point.x + 1, point.y));
+        neighbors.add(new Point(point.x - 1, point.y));
+        neighbors.add(new Point(point.x, point.y + 1));
+        neighbors.add(new Point(point.x, point.y - 1));
+        return neighbors;
     }
 
-    private Road findNearestRoad(Road road) {
-        Road nearestRoad = null;
-        int minDistance = Integer.MAX_VALUE;
+    class Node implements Comparable<Node> {
+        Point point;
+        int gCost, hCost;
 
-        for (Road otherRoad : roads) {
-            if (road == otherRoad) continue;
-            int distance = Math.abs(road.getRectangle().x - otherRoad.getRectangle().x) +
-                    Math.abs(road.getRectangle().y - otherRoad.getRectangle().y);
-            if (distance < minDistance) {
-                minDistance = distance;
-                nearestRoad = otherRoad;
-            }
+        Node(Point point, int gCost, int hCost) {
+            this.point = point;
+            this.gCost = gCost;
+            this.hCost = hCost;
         }
 
-        return nearestRoad;
-    }
-
-    private void removeIsolatedRoads() {
-        Set<Road> connectedRoads = new HashSet<>();
-        for (Road road : roads) {
-            if (isConnected(road)) {
-                connectedRoads.add(road);
-            }
-        }
-        roads.retainAll(connectedRoads);
-    }
-
-    private boolean isConnected(Road road) {
-        for (Road otherRoad : roads) {
-            if (road != otherRoad && areAdjacent(road, otherRoad)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean areAdjacent(Road r1, Road r2) {
-        return Math.abs(r1.getRectangle().x - r2.getRectangle().x) +
-                Math.abs(r1.getRectangle().y - r2.getRectangle().y) == 1;
-    }
-
-    private void simplifyParallelRoads() {
-        Set<Road> roadsToRemove = new HashSet<>();
-        for (Road road1 : roads) {
-            for (Road road2 : roads) {
-                if (road1 != road2 && isParallel(road1, road2)) {
-                    mergeRoads(road1, road2);
-                    roadsToRemove.add(road2);
-                }
-            }
-        }
-        roads.removeAll(roadsToRemove);
-    }
-
-    private boolean isParallel(Road r1, Road r2) {
-        return (r1.getRectangle().x == r2.getRectangle().x && Math.abs(r1.getRectangle().y - r2.getRectangle().y) == 1) ||
-                (r1.getRectangle().y == r2.getRectangle().y && Math.abs(r1.getRectangle().x - r2.getRectangle().x) == 1);
-    }
-
-    private void mergeRoads(Road r1, Road r2) {
-        r1.getRectangle().setSize(
-                Math.max(r1.getRectangle().width, r2.getRectangle().width),
-                Math.max(r1.getRectangle().height, r2.getRectangle().height)
-        );
-    }
-
-    private static class Edge {
-        Door from;
-        Door to;
-        int weight;
-
-        Edge(Door from, Door to, int weight) {
-            this.from = from;
-            this.to = to;
-            this.weight = weight;
+        @Override
+        public int compareTo(Node other) {
+            return Integer.compare(this.gCost + this.hCost, other.gCost + other.hCost);
         }
     }
 }

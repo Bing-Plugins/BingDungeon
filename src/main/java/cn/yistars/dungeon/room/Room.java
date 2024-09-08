@@ -25,6 +25,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -168,4 +169,16 @@ public class Room {
     public boolean contains(Location location) {
         return rectangle.contains(location.getBlockX() / BingDungeon.instance.getConfig().getInt("unit-size"), location.getBlockZ() / BingDungeon.instance.getConfig().getInt("unit-size"));
     }
+
+    public ArrayList<Point> getPoints() {
+        ArrayList<Point> points = new ArrayList<>();
+
+        for (Door door : doors) {
+            points.add(door.getPoint());
+        }
+
+        return points;
+    }
+
+
 }
