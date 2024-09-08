@@ -154,9 +154,6 @@ public class Arena {
         }
     }
 
-    /*
-        TODO 以下内容为实验性内容，存在较大问题，如：断头路，绕着房间跑，怼到房间墙壁的断头路
-     */
     public HashSet<Rectangle> getRectangles() {
         HashSet<Rectangle> rectangles = new HashSet<>();
         for (Room room : rooms) {
