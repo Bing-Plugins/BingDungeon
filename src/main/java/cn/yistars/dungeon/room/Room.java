@@ -167,18 +167,7 @@ public class Room {
 
     // TODO 测试用
     public boolean contains(Location location) {
-        return rectangle.contains(location.getBlockX() / BingDungeon.instance.getConfig().getInt("unit-size"), location.getBlockZ() / BingDungeon.instance.getConfig().getInt("unit-size"));
+        Rectangle realRectangle = new Rectangle(rectangle.x * BingDungeon.instance.getConfig().getInt("unit-size"), rectangle.y * BingDungeon.instance.getConfig().getInt("unit-size"), rectangle.width * BingDungeon.instance.getConfig().getInt("unit-size"), rectangle.height * BingDungeon.instance.getConfig().getInt("unit-size"));
+        return realRectangle.contains(location.getBlockX(), location.getBlockZ());
     }
-
-    public ArrayList<Point> getPoints() {
-        ArrayList<Point> points = new ArrayList<>();
-
-        for (Door door : doors) {
-            points.add(door.getPoint());
-        }
-
-        return points;
-    }
-
-
 }

@@ -28,6 +28,7 @@ public class Arena {
     private final List<Road> roads = new ArrayList<>();
     private final Integer initRadius = 5;
     private World world;
+    private HashSet<Player> players = new HashSet<>();
 
     public Arena() {
         initWorld();
