@@ -1,6 +1,7 @@
 package cn.yistars.dungeon.arena;
 
 import cn.yistars.dungeon.BingDungeon;
+import cn.yistars.dungeon.arena.map.ArenaMap;
 import cn.yistars.dungeon.road.Road;
 import cn.yistars.dungeon.room.Room;
 import cn.yistars.dungeon.room.RectangleSeparator;
@@ -29,6 +30,7 @@ public class Arena {
     private final Integer initRadius = 5;
     private World world;
     private HashSet<Player> players = new HashSet<>();
+    private final ArenaMap arenaMap = new ArenaMap(this);
 
     public Arena() {
         initWorld();
@@ -54,6 +56,8 @@ public class Arena {
                 initDoor();
                 initRoad();
                 spawnRoad();
+
+                arenaMap.update();
             }
         }.runTaskAsynchronously(BingDungeon.instance);
     }
