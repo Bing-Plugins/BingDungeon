@@ -40,8 +40,6 @@ public class Renderer extends MapRenderer {
         cursors.addCursor(cursor);
 
         mapCanvas.setCursors(cursors);
-
-        System.out.println("指针数量" + cursors.size());
     }
 
     private Byte getDirection(Player player) {
