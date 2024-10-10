@@ -29,7 +29,7 @@ public class Arena {
     private final List<Road> roads = new ArrayList<>();
     private final Integer initRadius = 5;
     private World world;
-    private HashSet<Player> players = new HashSet<>();
+    private final HashSet<Player> players = new HashSet<>();
     private final ArenaMap arenaMap = new ArenaMap(this);
 
     public Arena() {
