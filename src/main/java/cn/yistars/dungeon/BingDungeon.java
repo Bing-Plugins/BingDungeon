@@ -3,6 +3,7 @@ package cn.yistars.dungeon;
 import cn.yistars.dungeon.command.MainCommand;
 import cn.yistars.dungeon.config.ConfigAccessor;
 import cn.yistars.dungeon.config.ConfigManager;
+import cn.yistars.dungeon.listener.MapListener;
 import cn.yistars.dungeon.listener.PlayerListener;
 import cn.yistars.dungeon.listener.SetupListener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,6 +21,7 @@ public class BingDungeon extends JavaPlugin {
         ConfigManager.loadConfig();
 
         this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+        this.getServer().getPluginManager().registerEvents(new MapListener(), this);
 
         this.getCommand("BingDungeon").setExecutor(new MainCommand());
 

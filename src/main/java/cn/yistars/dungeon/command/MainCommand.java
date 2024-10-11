@@ -1,6 +1,7 @@
 package cn.yistars.dungeon.command;
 
 import cn.yistars.dungeon.BingDungeon;
+import cn.yistars.dungeon.arena.Arena;
 import cn.yistars.dungeon.arena.ArenaManager;
 import cn.yistars.dungeon.config.ConfigManager;
 import cn.yistars.dungeon.config.LangManager;
@@ -119,7 +120,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     return false;
                 }
             case "debug":
-                ArenaManager.createArena();
+                Arena arena = ArenaManager.createArena();
+                player = (Player) sender;
+                arena.addPlayer(player);
                 return true;
             default:
                 return false;

@@ -5,6 +5,8 @@ import org.bukkit.map.*;
 
 public class Renderer extends MapRenderer {
     private final ArenaMap arenaMap;
+    private MapCanvas mapCanvas;
+    private Player player;
 
     public Renderer(ArenaMap arenaMap) {
         this.arenaMap = arenaMap;
@@ -12,6 +14,16 @@ public class Renderer extends MapRenderer {
 
     @Override
     public void render(MapView mapView, MapCanvas mapCanvas, Player player) {
+        this.mapCanvas = mapCanvas;
+        this.player = player;
+        updateMap(mapCanvas, player);
+    }
+
+    public void update() {
+        updateMap(mapCanvas, player);
+    }
+
+    private void updateMap(MapCanvas mapCanvas, Player player) {
         // 地图大小 128 * 128，地图单元为 5
         mapCanvas.drawImage(0, 0, arenaMap.getBufferedImage());
 

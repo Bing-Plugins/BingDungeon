@@ -10,11 +10,13 @@ import org.bukkit.map.MapView;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.HashSet;
 
 @Getter
 public class ArenaMap {
     private final Arena arena;
     private BufferedImage bufferedImage;
+    private final HashSet<Renderer> renderers = new HashSet<>();
 
     public ArenaMap(Arena arena) {
         this.arena = arena;
@@ -23,6 +25,10 @@ public class ArenaMap {
     public void update() {
         // 更新地图
         initBufferedImage();
+
+        for (Renderer renderer : renderers) {
+            renderer.update();
+        }
     }
 
     public void updateMapView(MapView mapView) {
@@ -37,7 +43,9 @@ public class ArenaMap {
             mapView.removeRenderer(renderer);
         }
 
-        mapView.addRenderer(new Renderer(this));
+        Renderer renderer = new Renderer(this);
+        mapView.addRenderer(renderer);
+        renderers.add(renderer);
     }
 
     private void initBufferedImage() {
@@ -46,6 +54,7 @@ public class ArenaMap {
         Graphics2D g2d = bufferedImage.createGraphics();
 
         for (Room room : arena.getRooms()) {
+            if (!room.getIsFind()) continue;
             g2d.setColor(Color.ORANGE);
             for (int i = 0; i < room.getRectangle().height * 3; i++) {
                 g2d.drawLine(64 + room.getRectangle().x * 3, 64 + room.getRectangle().y * 3 + i, 64 + room.getRectangle().x * 3 + room.getRectangle().width * 3, 64 + room.getRectangle().y * 3 + i);
@@ -56,8 +65,9 @@ public class ArenaMap {
         }
 
         for (Road road : arena.getRoads()) {
+            if (!road.getIsFind()) continue;
             g2d.setColor(Color.DARK_GRAY);
-            g2d.drawRect(64 + road.getRectangle().x * 3, 64 + road.getRectangle().y * 3, road.getRectangle().width * 3, road.getRectangle().height * 3);
+            g2d.drawRect(64 + road.getRectangle().x * 3, 64 + road.getRectangle().y * 3, 3, 3);
 
             g2d.setColor(Color.RED);
             g2d.drawRect(64 + road.getRectangle().x * 3 + 1, 64 + road.getRectangle().y * 3 + 1, 1, 1);

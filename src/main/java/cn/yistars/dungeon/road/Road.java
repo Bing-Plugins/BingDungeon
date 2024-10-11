@@ -21,11 +21,14 @@ import java.util.HashSet;
 
 @Getter
 public class Road {
+    private final Arena arena;
     private final Rectangle rectangle;
     private final HashSet<DoorType> facings = new HashSet<>();
     private PreloadRoad preloadRoad;
+    private Boolean isFind = false;
 
-    public Road() {
+    public Road(Arena arena) {
+        this.arena = arena;
         this.rectangle = new Rectangle(0, 0, 1, 1);
     }
 
@@ -77,5 +80,11 @@ public class Road {
     public boolean contains(Location location) {
         Rectangle realRectangle = new Rectangle(rectangle.x * BingDungeon.instance.getConfig().getInt("unit-size"), rectangle.y * BingDungeon.instance.getConfig().getInt("unit-size"), rectangle.width * BingDungeon.instance.getConfig().getInt("unit-size"), rectangle.height * BingDungeon.instance.getConfig().getInt("unit-size"));
         return realRectangle.contains(location.getBlockX(), location.getBlockZ());
+    }
+
+    public void find() {
+        if (isFind) return;
+        isFind = true;
+        arena.getArenaMap().update();
     }
 }

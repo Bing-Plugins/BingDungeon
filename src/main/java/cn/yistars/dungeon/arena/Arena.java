@@ -33,18 +33,71 @@ public class Arena {
     private final ArenaMap arenaMap = new ArenaMap(this);
 
     public Arena() {
-        initWorld();
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                initWorld();
+            }
+        }.runTaskAsynchronously(BingDungeon.instance);
 
         new BukkitRunnable() {
             @Override
             public void run() {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (player.getWorld().equals(world)) {
-                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(getRoom(player.getLocation())));
+                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(getDebugLoc(player.getLocation())));
                     }
                 }
             }
         }.runTaskTimerAsynchronously(BingDungeon.instance, 0, 10);
+    }
+
+    public void addPlayer(Player player) {
+        players.add(player);
+    }
+
+    public void findArea(Location location) {
+        // 使临近区域显示
+        RegionType regionType = getType(location);
+        if (regionType == null) return;
+
+        int x, z;
+        switch (regionType) {
+            case ROAD:
+                Road road = getRoad(location);
+                //if (road == null) return;
+                x = road.getRectangle().x;
+                z = road.getRectangle().y;
+                break;
+            case ROOM:
+                Room room = getRoom(location);
+                //if (room == null) return;
+                x = room.getRectangle().x;
+                z = room.getRectangle().y;
+                break;
+            default:
+                return;
+        }
+
+        for (int i = x - 2; i <= x + 2; i++) {
+            for (int j = z - 2; j <= z + 2; j++) {
+                makeFind(i, j);
+            }
+        }
+    }
+
+    private void makeFind(int x, int z) {
+        RegionType regionType = getType(x, z);
+        if (regionType == null) return;
+
+        switch (regionType) {
+            case ROAD:
+                getRoad(x, z).find();
+                break;
+            case ROOM:
+                getRoom(x, z).find();
+                break;
+        }
     }
 
     private void nextStep() {
@@ -80,7 +133,7 @@ public class Arena {
 
     private void initRoom() {
         for (String key : BingDungeon.instance.Rooms.getConfig().getKeys(false)) {
-            rooms.add(new Room(key));
+            rooms.add(new Room(this, key));
         }
     }
 
@@ -102,6 +155,22 @@ public class Arena {
         for (Room room : rooms) {
             room.pasting(new BukkitWorld(this.world));
         }
+    }
+
+    public RegionType getType(Location location) {
+        for (Room room : rooms) {
+            if (room.contains(location)) {
+                return RegionType.ROOM;
+            }
+        }
+
+        for (Road road : roads) {
+            if (road.contains(location)) {
+                return RegionType.ROAD;
+            }
+        }
+
+        return null;
     }
 
     public RegionType getType(double x, double y) {
@@ -129,6 +198,33 @@ public class Arena {
         return null;
     }
 
+    public Room getRoom(Location location) {
+        for (Room room : rooms) {
+            if (room.contains(location)) {
+                return room;
+            }
+        }
+        return null;
+    }
+
+    public Road getRoad(double x, double y) {
+        for (Road road : roads) {
+            if (road.getRectangle().contains(x, y)) {
+                return road;
+            }
+        }
+        return null;
+    }
+
+    public Road getRoad(Location location) {
+        for (Road road : roads) {
+            if (road.contains(location)) {
+                return road;
+            }
+        }
+        return null;
+    }
+
     private void initDoor() {
         for (Room room : rooms) {
             room.initDoors();
@@ -136,7 +232,7 @@ public class Arena {
     }
 
     // TODO DEBUG 用获取位置
-    public String getRoom(Location location) {
+    public String getDebugLoc(Location location) {
         for (Room room : rooms) {
             if (room.contains(location)) {
                 return room.getId() + " (" + room.getAngle() + "° 旋转) :" + (int) location.getX() / 7 + ", " + (int) location.getZ() / 7;
@@ -207,7 +303,7 @@ public class Arena {
         for (int i = 0; i < path.size() - 1; i++) {
             Point start = path.get(i);
             Point end = path.get(i + 1);
-            Road road = new Road();
+            Road road = new Road(this);
             road.setPosition(start.x, start.y);
             roads.add(road);
         }

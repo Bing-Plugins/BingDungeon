@@ -11,6 +11,7 @@ import com.infernalsuite.aswm.api.world.properties.SlimeProperties;
 import com.infernalsuite.aswm.api.world.properties.SlimePropertyMap;
 import com.infernalsuite.aswm.loaders.mysql.MysqlLoader;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
@@ -24,6 +25,14 @@ public class ArenaManager {
     private static SlimeLoader loader;
     private static final SlimePropertyMap properties = new SlimePropertyMap();
 
+    public static Arena getArena(Player player) {
+        for (Arena arena : arenas) {
+            if (arena.getPlayers().contains(player)) {
+                return arena;
+            }
+        }
+        return null;
+    }
 
     public static void initArena() {
         asp = AdvancedSlimePaperAPI.instance();
@@ -64,13 +73,9 @@ public class ArenaManager {
         }.runTaskAsynchronously(BingDungeon.instance);
     }
 
-    public static void createArena() {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                arenas.add(new Arena());
-            }
-        }.runTaskAsynchronously(BingDungeon.instance);
-
+    public static Arena createArena() {
+        Arena arena = new Arena();
+        arenas.add(arena);
+        return arena;
     }
 }

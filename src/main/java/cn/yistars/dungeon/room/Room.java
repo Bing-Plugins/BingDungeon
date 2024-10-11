@@ -1,6 +1,7 @@
 package cn.yistars.dungeon.room;
 
 import cn.yistars.dungeon.BingDungeon;
+import cn.yistars.dungeon.arena.Arena;
 import cn.yistars.dungeon.room.door.Door;
 import cn.yistars.dungeon.room.door.DoorType;
 import com.sk89q.worldedit.EditSession;
@@ -17,6 +18,7 @@ import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.World;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -31,6 +33,7 @@ import java.util.Random;
 
 @Getter
 public class Room {
+    private final Arena arena;
     private final String id;
     private final RoomType type;
     private Rectangle rectangle;
@@ -39,8 +42,10 @@ public class Room {
     private final HashSet<Door> doors = new HashSet<>();
     private final Integer yOffset;
     private final Integer angle;
+    private Boolean isFind = false;
 
-    public Room(String id) {
+    public Room(Arena arena, String id) {
+        this.arena = arena;
         this.id = id;
         this.type = RoomType.valueOf(BingDungeon.instance.Rooms.getConfig().getString(id + ".type", "NORMAL").toUpperCase());
         this.rectangle = new Rectangle(0, 0,
@@ -165,7 +170,12 @@ public class Room {
         }.runTaskTimerAsynchronously(BingDungeon.instance, 0, 5);
     }
 
-    // TODO 测试用
+    public void find() {
+        if (isFind) return;
+        isFind = true;
+        arena.getArenaMap().update();
+    }
+
     public boolean contains(Location location) {
         Rectangle realRectangle = new Rectangle(rectangle.x * BingDungeon.instance.getConfig().getInt("unit-size"), rectangle.y * BingDungeon.instance.getConfig().getInt("unit-size"), rectangle.width * BingDungeon.instance.getConfig().getInt("unit-size"), rectangle.height * BingDungeon.instance.getConfig().getInt("unit-size"));
         return realRectangle.contains(location.getBlockX(), location.getBlockZ());
