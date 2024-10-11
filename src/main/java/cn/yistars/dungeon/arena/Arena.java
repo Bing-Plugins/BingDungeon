@@ -65,13 +65,11 @@ public class Arena {
         switch (regionType) {
             case ROAD:
                 Road road = getRoad(location);
-                //if (road == null) return;
                 x = road.getRectangle().x;
                 z = road.getRectangle().y;
                 break;
             case ROOM:
                 Room room = getRoom(location);
-                //if (room == null) return;
                 x = room.getRectangle().x;
                 z = room.getRectangle().y;
                 break;
@@ -248,7 +246,6 @@ public class Arena {
     }
 
     private void spawnRoad() {
-        System.out.println("生成道路");
         for (Road road : roads) {
             road.initFacing(this);
             road.pasting(BukkitAdapter.adapt(world));
