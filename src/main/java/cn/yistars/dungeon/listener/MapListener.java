@@ -2,7 +2,6 @@ package cn.yistars.dungeon.listener;
 
 import cn.yistars.dungeon.arena.Arena;
 import cn.yistars.dungeon.arena.ArenaManager;
-import cn.yistars.dungeon.setup.RegionType;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
