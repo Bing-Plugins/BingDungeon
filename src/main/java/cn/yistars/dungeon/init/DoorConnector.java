@@ -12,95 +12,242 @@ import java.util.List;
 public class DoorConnector {
     private final ArrayList<Room> rooms;
     private final HashSet<Point> result = new HashSet<>(); // 结果
-    private final HashMap<Point, List<Point>> doorConnections = new HashMap<>(); // 门口与其连接点
-    private Set<Rectangle> obstacles = new HashSet<>(); // 所有障碍物
-    private List<Point> allDoors = new ArrayList<>(); // 所有门
-
-    // 方向: 上、右、下、左
-    private final int[][] directions = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+    private final HashSet<Rectangle> obstacles = new HashSet<>(); // 所有的障碍物
+    private final List<Door> allDoors = new ArrayList<>(); // 所有的门
+    private final AStarPathFinder aStarPathFinder; // A*寻路算法
+    private final ACOPathFinder acoPathFinder; // 蚁群优化算法
 
     public DoorConnector(ArrayList<Room> rooms) {
         this.rooms = rooms;
-        initializeObstaclesAndDoors();
-        connectAll();
+
+        // 初始化障碍物和门
+        initObstaclesAndDoors();
+
+        // 初始化寻路算法
+        aStarPathFinder = new AStarPathFinder(obstacles);
+        acoPathFinder = new ACOPathFinder(obstacles);
+
+        // 执行路径连接
+        connectDoors();
     }
 
     /**
-     * 初始化所有障碍物和门
+     * 初始化障碍物和门信息
      */
-    private void initializeObstaclesAndDoors() {
-        // 收集所有障碍物和门
+    private void initObstaclesAndDoors() {
         for (Room room : rooms) {
+            // 添加当前房间的障碍物
             obstacles.add(room.getRectangle());
-            for (Door door : room.getDoors()) {
-                Point doorPoint = door.getPoint();
-                allDoors.add(doorPoint);
-                result.add(doorPoint); // 添加门点到结果中
-                doorConnections.put(doorPoint, new ArrayList<>());
-            }
+
+            // 添加当前房间的所有门
+            allDoors.addAll(room.getDoors());
         }
     }
 
     /**
-     * 连接所有门
+     * 连接所有的门
      */
-    private void connectAll() {
-        // 使用蚁群算法选择最佳连接顺序
-        List<Point> optimizedOrder = antColonyOptimization();
+    private void connectDoors() {
+        // 构建最小生成树保证所有Room都连接上
+        List<DoorPair> mst = buildMinimumSpanningTree();
 
-        // 连接所有门
-        for (int i = 0; i < optimizedOrder.size() - 1; i++) {
-            Point start = optimizedOrder.get(i);
-            Point end = optimizedOrder.get(i + 1);
+        // 对于每个门对，执行路径连接
+        for (DoorPair doorPair : mst) {
+            connectDoorPair(doorPair.door1, doorPair.door2);
+        }
+    }
 
-            // 如果两个门已经通过其他路径连接，则跳过
-            if (areConnected(start, end)) {
-                continue;
-            }
+    /**
+     * 构建最小生成树，确保所有Room都连接上
+     */
+    private List<DoorPair> buildMinimumSpanningTree() {
+        List<DoorPair> mst = new ArrayList<>();
+        Set<Room> connectedRooms = new HashSet<>();
+        Set<Door> connectedDoors = new HashSet<>();
 
-            // 使用A*算法寻找从start到end的路径
-            List<Point> path = findPathAStar(start, end);
+        // 从第一个房间开始
+        if (!rooms.isEmpty()) {
+            connectedRooms.add(rooms.get(0));
+        }
 
-            if (path != null) {
-                // 添加路径到结果中
-                for (Point p : path) {
-                    result.add(p);
+        // 直到所有房间都连接上
+        while (connectedRooms.size() < rooms.size()) {
+            DoorPair bestPair = null;
+            double bestDistance = Double.MAX_VALUE;
+
+            // 寻找最近的连接点
+            for (Door door1 : allDoors) {
+                if (connectedDoors.contains(door1)) continue;
+
+                Room room1 = door1.getRoom();
+                if (!connectedRooms.contains(room1)) continue;
+
+                for (Door door2 : allDoors) {
+                    if (door1 == door2 || connectedDoors.contains(door2)) continue;
+
+                    Room room2 = door2.getRoom();
+                    if (room1 == room2) continue; // 避免同一房间门连接
+                    if (connectedRooms.contains(room2)) continue; // 避免形成环
+
+                    double distance = calculateManhattanDistance(door1.getPoint(), door2.getPoint());
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestPair = new DoorPair(door1, door2);
+                    }
                 }
+            }
 
-                // 更新门的连接关系
-                doorConnections.get(start).add(end);
-                doorConnections.get(end).add(start);
+            if (bestPair != null) {
+                mst.add(bestPair);
+                connectedDoors.add(bestPair.door1);
+                connectedDoors.add(bestPair.door2);
+                connectedRooms.add(bestPair.door2.getRoom());
+            } else {
+                // 无法继续连接
+                break;
             }
         }
 
-        // 检查是否所有门都已连接，若有未连接的门，尝试连接到最近的路径
-        connectRemainingDoors();
+        // 添加剩余的门连接，确保所有门都在路径上
+        for (Door door : allDoors) {
+            if (connectedDoors.contains(door)) continue;
+
+            Door closestDoor = null;
+            double minDistance = Double.MAX_VALUE;
+
+            for (Door connectedDoor : connectedDoors) {
+                if (door.getRoom() == connectedDoor.getRoom()) continue; // 避免同一房间门连接
+
+                double distance = calculateManhattanDistance(door.getPoint(), connectedDoor.getPoint());
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestDoor = connectedDoor;
+                }
+            }
+
+            if (closestDoor != null) {
+                mst.add(new DoorPair(door, closestDoor));
+                connectedDoors.add(door);
+            }
+        }
+
+        return mst;
     }
 
     /**
-     * 检查两个门是否已经通过路径连接
+     * 连接一对门
      */
-    private boolean areConnected(Point start, Point end) {
-        // 使用BFS检查两点是否已连接
-        Queue<Point> queue = new LinkedList<>();
-        Set<Point> visited = new HashSet<>();
+    private void connectDoorPair(Door door1, Door door2) {
+        Point start = door1.getPoint();
+        Point end = door2.getPoint();
 
-        queue.add(start);
-        visited.add(start);
+        // 将开始和结束点添加到结果中
+        result.add(start);
+        result.add(end);
 
-        while (!queue.isEmpty()) {
-            Point current = queue.poll();
+        // 先尝试使用A*算法
+        List<Point> path = aStarPathFinder.findPath(start, end);
 
-            if (current.equals(end)) {
-                return true;
+        // 如果A*找不到路径或者路径较差，尝试蚁群算法
+        if (path == null || path.isEmpty() || pathQualityBelowThreshold(path)) {
+            path = acoPathFinder.findPath(start, end);
+        }
+
+        // 简化路径，去掉不必要的拐点
+        path = simplifyPath(path);
+
+        // 添加路径点到结果集
+        result.addAll(path);
+    }
+
+    /**
+     * 计算曼哈顿距离
+     */
+    private double calculateManhattanDistance(Point p1, Point p2) {
+        return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
+    }
+
+    /**
+     * 判断路径质量是否低于阈值
+     */
+    private boolean pathQualityBelowThreshold(List<Point> path) {
+        // 简单实现：如果拐点过多，则认为质量较低
+        int turns = 0;
+        for (int i = 1; i < path.size() - 1; i++) {
+            Point prev = path.get(i-1);
+            Point curr = path.get(i);
+            Point next = path.get(i+1);
+
+            if ((prev.x != curr.x && curr.x != next.x) ||
+                    (prev.y != curr.y && curr.y != next.y)) {
+                turns++;
+            }
+        }
+        return turns > path.size() / 3; // 如果拐点超过路径长度的1/3
+    }
+
+    /**
+     * 简化路径，删除田字形路径，转换为L形
+     */
+    private List<Point> simplifyPath(List<Point> path) {
+        if (path == null || path.size() <= 2) return path;
+
+        List<Point> result = new ArrayList<>();
+        result.add(path.get(0)); // 添加起点
+
+        for (int i = 1; i < path.size() - 1; i++) {
+            Point prev = path.get(i-1);
+            Point curr = path.get(i);
+            Point next = path.get(i+1);
+
+            // 如果当前点形成田字形路径的一部分，跳过
+            if ((prev.x == curr.x && curr.y == next.y) ||
+                    (prev.y == curr.y && curr.x == next.x)) {
+                // 检查是否可以直接从prev到next而不经过障碍物
+                if (!pathCrossesObstacles(prev, next)) {
+                    continue;
+                }
             }
 
-            // 检查四个方向
-            for (int[] dir : directions) {
-                Point next = new Point(current.x + dir[0], current.y + dir[1]);
-                if (result.contains(next) && !visited.contains(next)) {
-                    queue.add(next);
-                    visited.add(next);
+            result.add(curr);
+        }
+
+        result.add(path.get(path.size() - 1)); // 添加终点
+        return result;
+    }
+
+    /**
+     * 检查路径是否穿过障碍物
+     */
+    private boolean pathCrossesObstacles(Point start, Point end) {
+        // 如果不是水平或垂直线，则无法直接连接
+        if (start.x != end.x && start.y != end.y) {
+            return true;
+        }
+
+        // 检查水平线
+        if (start.y == end.y) {
+            int minX = Math.min(start.x, end.x);
+            int maxX = Math.max(start.x, end.x);
+            for (int x = minX; x <= maxX; x++) {
+                Point p = new Point(x, start.y);
+                for (Rectangle obstacle : obstacles) {
+                    if (obstacle.contains(p)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        // 检查垂直线
+        else {
+            int minY = Math.min(start.y, end.y);
+            int maxY = Math.max(start.y, end.y);
+            for (int y = minY; y <= maxY; y++) {
+                Point p = new Point(start.x, y);
+                for (Rectangle obstacle : obstacles) {
+                    if (obstacle.contains(p)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -109,67 +256,15 @@ public class DoorConnector {
     }
 
     /**
-     * 使用蚁群优化算法确定连接门的最佳顺序
+     * 门对类，用于表示需要连接的两个门
      */
-    private List<Point> antColonyOptimization() {
-        AntColonyOptimizer optimizer = new AntColonyOptimizer(allDoors, obstacles);
-        return optimizer.findOptimalOrder();
-    }
+    private static class DoorPair {
+        Door door1;
+        Door door2;
 
-    /**
-     * 使用A*算法寻找两点间的路径
-     */
-    private List<Point> findPathAStar(Point start, Point end) {
-        AStar aStar = new AStar(obstacles, result);
-        return aStar.findPath(start, end);
-    }
-
-    /**
-     * 连接剩余未连接的门
-     */
-    private void connectRemainingDoors() {
-        // 对于每个门，检查是否与其他门连接
-        for (Point door : allDoors) {
-            if (!isConnectedToAnyDoor(door)) {
-                // 寻找最近的已有路径点
-                Point nearestPathPoint = findNearestPathPoint(door);
-                if (nearestPathPoint != null) {
-                    List<Point> path = findPathAStar(door, nearestPathPoint);
-                    if (path != null) {
-                        for (Point p : path) {
-                            result.add(p);
-                        }
-                    }
-                }
-            }
+        DoorPair(Door door1, Door door2) {
+            this.door1 = door1;
+            this.door2 = door2;
         }
-    }
-
-    /**
-     * 检查一个门是否与任何其他门连接
-     */
-    private boolean isConnectedToAnyDoor(Point door) {
-        return !doorConnections.get(door).isEmpty();
-    }
-
-    /**
-     * 寻找最近的已有路径点
-     */
-    private Point findNearestPathPoint(Point door) {
-        Point nearest = null;
-        double minDistance = Double.MAX_VALUE;
-
-        for (Point p : result) {
-            // 跳过门本身
-            if (allDoors.contains(p)) continue;
-
-            double distance = door.distance(p);
-            if (distance < minDistance) {
-                minDistance = distance;
-                nearest = p;
-            }
-        }
-
-        return nearest;
     }
 }
