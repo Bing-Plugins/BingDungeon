@@ -40,7 +40,6 @@ public class Road {
         checkFacing(arena, rectangle.x + 1, rectangle.y, DoorType.EAST);
         checkFacing(arena, rectangle.x - 1, rectangle.y, DoorType.WEST);
 
-
         preloadRoad = RoadManager.getPreloadRoads(facings).stream().findFirst().orElse(null);
     }
 
@@ -67,6 +66,10 @@ public class Road {
     }
 
     public void pasting(World world) {
+        if (facings.isEmpty()) {
+            System.out.println("出现孤单点位");
+            return;
+        }
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(world)) {
             Operation operation = new ClipboardHolder(preloadRoad.getClipboard())
                     .createPaste(editSession)

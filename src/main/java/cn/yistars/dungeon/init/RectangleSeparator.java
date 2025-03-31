@@ -1,4 +1,6 @@
-package cn.yistars.dungeon.room;
+package cn.yistars.dungeon.init;
+
+import cn.yistars.dungeon.room.Room;
 
 import java.awt.*;
 import java.util.List;
