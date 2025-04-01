@@ -51,8 +51,8 @@ public class Room {
                 BingDungeon.instance.Rooms.getConfig().getInt(id + ".length")
         );
         this.marginRectangle = new Rectangle(
-                rectangle.x,
-                rectangle.y,
+                rectangle.x - BingDungeon.instance.getConfig().getInt("unit-margin"),
+                rectangle.y - BingDungeon.instance.getConfig().getInt("unit-margin"),
                 rectangle.width + BingDungeon.instance.getConfig().getInt("unit-margin") * 2,
                 rectangle.height + BingDungeon.instance.getConfig().getInt("unit-margin") * 2
         );
