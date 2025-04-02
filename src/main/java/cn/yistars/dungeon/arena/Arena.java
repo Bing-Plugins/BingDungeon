@@ -2,7 +2,7 @@ package cn.yistars.dungeon.arena;
 
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.arena.map.ArenaMap;
-import cn.yistars.dungeon.init.DoorConnector;
+import cn.yistars.dungeon.init.Connector;
 import cn.yistars.dungeon.road.Road;
 import cn.yistars.dungeon.room.Room;
 import cn.yistars.dungeon.init.RectangleSeparator;
@@ -157,7 +157,7 @@ public class Arena {
 
     private void connectDoor() {
         // A* 路径查找 + 蚁群算法
-        DoorConnector connector = new DoorConnector((ArrayList<Room>) rooms);
+        Connector connector = new Connector((ArrayList<Room>) rooms);
 
         // 连接所有门
         HashSet<Point> pathPoints = connector.getResult();
