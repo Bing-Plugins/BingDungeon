@@ -1,165 +1,332 @@
 package cn.yistars.dungeon.init;
 
-import cn.yistars.dungeon.room.door.Door;
-
-import java.awt.Point;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class AntColonyOptimization {
-    private final Connector connector;
-    private static final double ALPHA = 1.0; // 信息素重要程度
-    private static final double BETA = 2.0; // 启发式信息重要程度
-    private static final double RHO = 0.5; // 信息素蒸发率
-    private static final double Q = 100.0; // 信息素增加常数
-    private static final int MAX_ITERATIONS = 100; // 最大迭代次数
-    private static final int ANT_COUNT = 20; // 蚂蚁数量
+    private final int antCount; // 蚂蚁数量
+    private final int maxIterations; // 最大迭代次数
+    private final double alpha; // 信息素重要程度
+    private final double beta; // 启发式因子重要程度
+    private final double evaporationRate; // 信息素蒸发率
+    private final double q; // 信息素增加强度
+    private final Random random = new Random();
 
-    public AntColonyOptimization(Connector connector) {
-        this.connector = connector;
+    // 存储障碍物信息
+    private final Set<Point> obstacles = new HashSet<>();
+
+    // 存储节点间的信息素浓度
+    private Map<Edge, Double> pheromones = new HashMap<>();
+
+    // 表示图中的边
+    private static class Edge {
+        final Point from;
+        final Point to;
+
+        Edge(Point from, Point to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Edge edge = (Edge) o;
+            return (from.equals(edge.from) && to.equals(edge.to)) ||
+                    (from.equals(edge.to) && to.equals(edge.from));
+        }
+
+        @Override
+        public int hashCode() {
+            return from.hashCode() + to.hashCode();
+        }
     }
 
-    // 寻找最优的门连接方案
-    public List<DoorPair> findOptimalConnections(List<Door> allDoors) {
-        HashMap<DoorPair, Double> doorPairPheromones = initializeDoorPairPheromones(allDoors);
-        List<DoorPair> bestSolution = null;
-        double bestSolutionQuality = Double.MAX_VALUE;
+    public AntColonyOptimization() {
+        this(50, 100, 1.0, 2.0, 0.5, 100.0);
+    }
 
-        // ACO主循环
-        for (int iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
-            List<List<DoorPair>> antSolutions = new ArrayList<>();
+    public AntColonyOptimization(int antCount, int maxIterations, double alpha,
+                                 double beta, double evaporationRate, double q) {
+        this.antCount = antCount;
+        this.maxIterations = maxIterations;
+        this.alpha = alpha;
+        this.beta = beta;
+        this.evaporationRate = evaporationRate;
+        this.q = q;
+    }
 
-            // 每只蚂蚁构建一个解决方案
-            for (int ant = 0; ant < ANT_COUNT; ant++) {
-                List<DoorPair> solution = buildSolution(allDoors, doorPairPheromones);
-                antSolutions.add(solution);
+    public void addObstacle(Rectangle rect) {
+        for (int x = rect.x; x < rect.x + rect.width; x++) {
+            for (int y = rect.y; y < rect.y + rect.height; y++) {
+                obstacles.add(new Point(x, y));
+            }
+        }
+    }
 
-                // 评估解决方案质量
-                double solutionQuality = evaluateSolution(solution);
-                if (solutionQuality < bestSolutionQuality) {
-                    bestSolutionQuality = solutionQuality;
-                    bestSolution = new ArrayList<>(solution);
+    // 曼哈顿距离
+    private int manhattanDistance(Point p1, Point p2) {
+        return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
+    }
+
+    // 检查点是否有效（不在障碍物上）
+    private boolean isValidPoint(Point p) {
+        return !obstacles.contains(p);
+    }
+
+    // 使用蚁群算法找到两点间的路径
+    public List<Point> findPath(Point start, Point end, boolean canReachDirect) {
+        // 如果可以直接到达并且路径有效，则直接返回
+        if (canReachDirect && isValidStraightPath(start, end)) {
+            return createStraightPath(start, end);
+        }
+
+        // 初始化信息素
+        initializePheromones();
+
+        // 用于存储最佳路径
+        List<Point> bestPath = null;
+        int bestPathLength = Integer.MAX_VALUE;
+
+        // 迭代
+        for (int i = 0; i < maxIterations; i++) {
+            List<List<Point>> antPaths = new ArrayList<>();
+
+            // 每只蚂蚁寻找路径
+            for (int ant = 0; ant < antCount; ant++) {
+                List<Point> path = constructPath(start, end);
+                if (path != null) {
+                    antPaths.add(path);
+
+                    // 更新最佳路径
+                    if (path.size() < bestPathLength) {
+                        bestPathLength = path.size();
+                        bestPath = new ArrayList<>(path);
+                    }
                 }
             }
 
             // 更新信息素
-            updatePheromones(doorPairPheromones, antSolutions);
+            updatePheromones(antPaths);
         }
 
-        return bestSolution;
+        return bestPath != null ? bestPath : createLShapedPath(start, end);
     }
 
-    // 初始化门对之间的信息素
-    private HashMap<DoorPair, Double> initializeDoorPairPheromones(List<Door> allDoors) {
-        HashMap<DoorPair, Double> pheromones = new HashMap<>();
+    // 如果没有找到路径，则创建一个L形路径
+    private List<Point> createLShapedPath(Point start, Point end) {
+        List<Point> path = new ArrayList<>();
+        Point corner = new Point(start.x, end.y);
 
-        for (int i = 0; i < allDoors.size(); i++) {
-            for (int j = i + 1; j < allDoors.size(); j++) {
-                Door door1 = allDoors.get(i);
-                Door door2 = allDoors.get(j);
+        // 如果L形拐角处于障碍物位置，尝试另一个方向的L形路径
+        if (obstacles.contains(corner)) {
+            corner = new Point(end.x, start.y);
+        }
 
-                // 同一个房间的门尽量不连接，但不完全排除
-                double initialPheromone = (door1.getRoom() == door2.getRoom()) ? 0.1 : 1.0;
-                pheromones.put(new DoorPair(door1, door2), initialPheromone);
+        // 如果两个方向的L形路径拐角都在障碍物上，则找一条绕开障碍物的路径
+        if (obstacles.contains(corner)) {
+            return findAlternativePath(start, end);
+        }
+
+        path.add(start);
+        path.addAll(createStraightPath(start, corner).subList(1, createStraightPath(start, corner).size()));
+        path.addAll(createStraightPath(corner, end).subList(1, createStraightPath(corner, end).size()));
+
+        return path;
+    }
+
+    // 寻找替代路径，绕开障碍物
+    private List<Point> findAlternativePath(Point start, Point end) {
+        // 尝试寻找一个可行的中间点
+        for (int offset = 1; offset < 20; offset++) {
+            Point[] possibleCorners = {
+                    new Point(start.x + offset, start.y),
+                    new Point(start.x - offset, start.y),
+                    new Point(start.x, start.y + offset),
+                    new Point(start.x, start.y - offset)
+            };
+
+            for (Point c1 : possibleCorners) {
+                if (isValidPoint(c1)) {
+                    Point[] secondCorners = {
+                            new Point(c1.x, end.y),
+                            new Point(end.x, c1.y)
+                    };
+
+                    for (Point c2 : secondCorners) {
+                        if (isValidPoint(c2) &&
+                                isValidStraightPath(start, c1) &&
+                                isValidStraightPath(c1, c2) &&
+                                isValidStraightPath(c2, end)) {
+
+                            List<Point> path = new ArrayList<>();
+                            path.add(start);
+                            path.addAll(createStraightPath(start, c1).subList(1, createStraightPath(start, c1).size()));
+                            path.addAll(createStraightPath(c1, c2).subList(1, createStraightPath(c1, c2).size()));
+                            path.addAll(createStraightPath(c2, end).subList(1, createStraightPath(c2, end).size()));
+                            return path;
+                        }
+                    }
+                }
             }
         }
 
-        return pheromones;
+        // 如果所有尝试都失败，返回空列表
+        return new ArrayList<>();
     }
 
-    // 构建解决方案
-    private List<DoorPair> buildSolution(List<Door> allDoors, HashMap<DoorPair, Double> pheromones) {
-        List<DoorPair> solution = new ArrayList<>();
-        Set<Door> connectedDoors = new HashSet<>();
+    // 检查两点间的直线路径是否有效（不穿过障碍物）
+    private boolean isValidStraightPath(Point start, Point end) {
+        // 对于水平或垂直路径
+        if (start.x == end.x || start.y == end.y) {
+            if (start.x == end.x) {
+                int minY = Math.min(start.y, end.y);
+                int maxY = Math.max(start.y, end.y);
 
-        // 从随机门开始
-        Random random = new Random();
-        Door currentDoor = allDoors.get(random.nextInt(allDoors.size()));
-        connectedDoors.add(currentDoor);
+                for (int y = minY + 1; y < maxY; y++) {
+                    if (obstacles.contains(new Point(start.x, y))) {
+                        return false;
+                    }
+                }
+            } else {
+                int minX = Math.min(start.x, end.x);
+                int maxX = Math.max(start.x, end.x);
 
-        // 构建最小生成树以确保所有门都连接
-        while (connectedDoors.size() < allDoors.size()) {
-            Door nextDoor = selectNextDoor(currentDoor, allDoors, connectedDoors, pheromones);
-            solution.add(new DoorPair(currentDoor, nextDoor));
-            connectedDoors.add(nextDoor);
-            currentDoor = nextDoor;
+                for (int x = minX + 1; x < maxX; x++) {
+                    if (obstacles.contains(new Point(x, start.y))) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
-        return solution;
+        return false;
     }
 
-    // 选择下一个要连接的门
-    private Door selectNextDoor(Door currentDoor, List<Door> allDoors, Set<Door> connectedDoors,
-                                HashMap<DoorPair, Double> pheromones) {
-        List<Door> candidates = new ArrayList<>();
-        List<Double> probabilities = new ArrayList<>();
-        double totalProbability = 0.0;
+    // 创建两点间的直线路径
+    private List<Point> createStraightPath(Point start, Point end) {
+        List<Point> path = new ArrayList<>();
+        path.add(start);
 
-        for (Door door : allDoors) {
-            if (!connectedDoors.contains(door)) {
-                candidates.add(door);
+        // 对于水平路径
+        if (start.y == end.y) {
+            int direction = start.x < end.x ? 1 : -1;
+            for (int x = start.x + direction; x != end.x + direction; x += direction) {
+                path.add(new Point(x, start.y));
+            }
+        }
+        // 对于垂直路径
+        else if (start.x == end.x) {
+            int direction = start.y < end.y ? 1 : -1;
+            for (int y = start.y + direction; y != end.y + direction; y += direction) {
+                path.add(new Point(start.x, y));
+            }
+        }
 
-                DoorPair pair = new DoorPair(currentDoor, door);
-                double pheromone = pheromones.getOrDefault(pair, 0.1);
-                double distance = Connector.manhattanDistance(currentDoor.getPoint(), door.getPoint());
-                double heuristic = 1.0 / distance; // 启发式信息（距离的倒数）
+        return path;
+    }
 
-                // 同一房间的门减少选择概率
-                if (currentDoor.getRoom() == door.getRoom()) {
-                    heuristic *= 0.5;
-                }
+    // 初始化信息素
+    private void initializePheromones() {
+        pheromones = new HashMap<>();
+    }
 
-                double probability = Math.pow(pheromone, ALPHA) * Math.pow(heuristic, BETA);
-                probabilities.add(probability);
+    // 蚂蚁构建路径
+    private List<Point> constructPath(Point start, Point end) {
+        Set<Point> visited = new HashSet<>();
+        List<Point> path = new ArrayList<>();
+        path.add(start);
+        visited.add(start);
+
+        Point current = start;
+
+        while (!current.equals(end) && path.size() < 100) {
+            List<Point> candidates = getNeighbors(current);
+            candidates.removeIf(visited::contains);
+
+            if (candidates.isEmpty()) {
+                return null; // 无法找到有效路径
+            }
+
+            // 计算概率
+            Map<Point, Double> probabilities = new HashMap<>();
+            double totalProbability = 0;
+
+            for (Point candidate : candidates) {
+                Edge edge = new Edge(current, candidate);
+                double pheromone = pheromones.getOrDefault(edge, 1.0);
+                double distance = 1.0 / manhattanDistance(candidate, end);
+                double probability = Math.pow(pheromone, alpha) * Math.pow(distance, beta);
+                probabilities.put(candidate, probability);
                 totalProbability += probability;
             }
-        }
 
-        // 轮盘赌选择
-        double rand = Math.random() * totalProbability;
-        double cumulativeProbability = 0.0;
+            // 选择下一个点
+            double random = this.random.nextDouble() * totalProbability;
+            double cumulativeProbability = 0;
+            Point next = null;
 
-        for (int i = 0; i < candidates.size(); i++) {
-            cumulativeProbability += probabilities.get(i);
-            if (cumulativeProbability >= rand) {
-                return candidates.get(i);
+            for (Map.Entry<Point, Double> entry : probabilities.entrySet()) {
+                cumulativeProbability += entry.getValue();
+                if (cumulativeProbability >= random) {
+                    next = entry.getKey();
+                    break;
+                }
             }
+
+            if (next == null) {
+                next = candidates.get(this.random.nextInt(candidates.size()));
+            }
+
+            path.add(next);
+            visited.add(next);
+            current = next;
         }
 
-        // 默认选择最后一个候选门
-        return candidates.get(candidates.size() - 1);
+        if (!current.equals(end)) {
+            return null; // 无法到达目标
+        }
+
+        return path;
     }
 
-    // 评估解决方案质量（总路径长度）
-    private double evaluateSolution(List<DoorPair> solution) {
-        double totalDistance = 0.0;
+    // 获取有效的邻居点（确保路径只包含直角拐弯）
+    private List<Point> getNeighbors(Point p) {
+        List<Point> neighbors = new ArrayList<>();
 
-        for (DoorPair pair : solution) {
-            totalDistance += Connector.manhattanDistance(pair.getDoor1().getPoint(), pair.getDoor2().getPoint());
+        Point[] possibleNeighbors = {
+                new Point(p.x + 1, p.y),
+                new Point(p.x - 1, p.y),
+                new Point(p.x, p.y + 1),
+                new Point(p.x, p.y - 1)
+        };
 
-            // 同一房间的门增加惩罚
-            if (pair.getDoor1().getRoom() == pair.getDoor2().getRoom()) {
-                totalDistance += 100;
+        for (Point neighbor : possibleNeighbors) {
+            if (isValidPoint(neighbor)) {
+                neighbors.add(neighbor);
             }
         }
 
-        return totalDistance;
+        return neighbors;
     }
 
     // 更新信息素
-    private void updatePheromones(HashMap<DoorPair, Double> pheromones, List<List<DoorPair>> antSolutions) {
+    private void updatePheromones(List<List<Point>> antPaths) {
         // 信息素蒸发
-        for (Map.Entry<DoorPair, Double> entry : pheromones.entrySet()) {
-            pheromones.put(entry.getKey(), entry.getValue() * (1 - RHO));
+        for (Edge edge : pheromones.keySet()) {
+            pheromones.put(edge, pheromones.get(edge) * (1 - evaporationRate));
         }
 
-        // 信息素增加
-        for (List<DoorPair> solution : antSolutions) {
-            double solutionQuality = evaluateSolution(solution);
-            double pheromoneDeposit = Q / solutionQuality;
+        // 增加信息素
+        for (List<Point> path : antPaths) {
+            double pheromoneToAdd = q / path.size();
 
-            for (DoorPair pair : solution) {
-                double currentPheromone = pheromones.getOrDefault(pair, 0.0);
-                pheromones.put(pair, currentPheromone + pheromoneDeposit);
+            for (int i = 0; i < path.size() - 1; i++) {
+                Edge edge = new Edge(path.get(i), path.get(i + 1));
+                pheromones.put(edge, pheromones.getOrDefault(edge, 0.0) + pheromoneToAdd);
             }
         }
     }
