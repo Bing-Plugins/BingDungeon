@@ -267,4 +267,88 @@ public class DoorConnector {
             this.door2 = door2;
         }
     }
+
+    // 获取最适合连接的 Point，需要一次从前往后尝试
+    public ArrayList<Point> getBestPointForConnection(Point start, Door door) {
+        HashMap<Point, Double> pointScores = new HashMap<>();
+        boolean canReachDoorFromStart = canReach(start, door);
+
+        // 第一轮：查找与起点距离小于10的点
+        for (Point point : result) {
+            if (point.equals(start)) continue;
+
+            // 计算距离
+            double distance = start.distance(point);
+            // 如果距离小于10且可以从起点到达该点，记录这个点
+            if (distance < 10 && canReach(start, door)) {
+                pointScores.put(point, distance);
+            }
+        }
+
+        // 如果没有找到合适的点，尝试第二种策略
+        if (pointScores.isEmpty()) {
+            for (Point point : result) {
+                // 计算该点到门的距离
+                double distance = point.distance(door.getPoint());
+                // 如果距离小于10且可以从该点到达门，记录这个点
+                if (distance < 10 && canReach(point, door) && canReach(start, door)) {
+                    pointScores.put(point, start.distance(point)); // 仍然使用到起点的距离进行排序
+                }
+            }
+        }
+
+        ArrayList<Point> points = new ArrayList<>();
+        // 按距离最小排序
+        pointScores.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue())
+                .forEach(entry -> points.add(entry.getKey()));
+
+        return points;
+    }
+
+    /*
+    判断指定 Point 是否可以通过 result 中已有的 Point 连接到目标 Door
+     */
+    public boolean canReach(Point start, Door target) {
+        // 如果起点就是目标点，直接返回true
+        Point targetPoint = target.getPoint();
+        if (start.equals(targetPoint)) {
+            return true;
+        }
+
+        // 使用BFS算法判断是否可达
+        Queue<Point> queue = new LinkedList<>();
+        Set<Point> visited = new HashSet<>();
+
+        queue.add(start);
+        visited.add(start);
+
+        // 四个方向的移动：上、右、下、左
+        int[][] directions = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+
+        while (!queue.isEmpty()) {
+            Point current = queue.poll();
+
+            // 检查四个方向
+            for (int[] dir : directions) {
+                int newX = current.x + dir[0];
+                int newY = current.y + dir[1];
+                Point newPoint = new Point(newX, newY);
+
+                // 如果新点是目标点
+                if (newPoint.equals(targetPoint)) {
+                    return true;
+                }
+
+                // 如果新点在result集合中且未访问过
+                if (result.contains(newPoint) && !visited.contains(newPoint)) {
+                    queue.add(newPoint);
+                    visited.add(newPoint);
+                }
+            }
+        }
+
+        // 如果遍历完所有可达点仍未找到目标点，则返回false
+        return false;
+    }
 }
