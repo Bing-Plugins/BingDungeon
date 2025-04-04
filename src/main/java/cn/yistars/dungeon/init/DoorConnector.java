@@ -67,7 +67,7 @@ public class DoorConnector {
 
         // 从第一个房间开始
         if (!rooms.isEmpty()) {
-            connectedRooms.add(rooms.get(0));
+            connectedRooms.add(rooms.getFirst());
         }
 
         // 直到所有房间都连接上
@@ -139,7 +139,7 @@ public class DoorConnector {
      */
     private void connectDoorPair(Door door1, Door door2) {
         Point start = door1.getPoint();
-        Point end = door2.getPoint();
+        Point end = getBestPointForConnection(start, door2).getFirst(); // 获取最适合连接的点
 
         // 将开始和结束点添加到结果中
         result.add(start);
@@ -149,9 +149,9 @@ public class DoorConnector {
         List<Point> path = aStarPathFinder.findPath(start, end);
 
         // 如果A*找不到路径或者路径较差，尝试蚁群算法
-        if (path == null || path.isEmpty() || pathQualityBelowThreshold(path)) {
+        //if (path == null || path.isEmpty() || pathQualityBelowThreshold(path)) {
             path = acoPathFinder.findPath(start, end);
-        }
+        //}
 
         // 简化路径，去掉不必要的拐点
         path = simplifyPath(path);
@@ -271,17 +271,29 @@ public class DoorConnector {
     // 获取最适合连接的 Point，需要一次从前往后尝试
     public ArrayList<Point> getBestPointForConnection(Point start, Door door) {
         HashMap<Point, Double> pointScores = new HashMap<>();
-        boolean canReachDoorFromStart = canReach(start, door);
+        // 最大追踪距离
+        final int MAX_DISTANCE = 12;
 
-        // 第一轮：查找与起点距离小于10的点
+        // 第一轮：查找与起点距离小于 10 的且不可达同 Room 的点
         for (Point point : result) {
             if (point.equals(start)) continue;
 
             // 计算距离
             double distance = start.distance(point);
-            // 如果距离小于10且可以从起点到达该点，记录这个点
-            if (distance < 10 && canReach(start, door)) {
-                pointScores.put(point, distance);
+            // 如果距离小于 10 且可以从起点到达该点，记录这个点
+            int steps = canReach(start, door);
+            if (distance < 15 && steps >= 0) {
+                // 远离因子
+                int count = 1;
+                for (Door sameRoomDoor : door.getRoom().getDoors()) {
+                    if (sameRoomDoor.equals(door)) continue;
+                    int stepsToPoint = canReach(point, sameRoomDoor, MAX_DISTANCE);
+                    if (stepsToPoint >= 0) {
+                        count += (MAX_DISTANCE - stepsToPoint);
+                    }
+                }
+
+                pointScores.put(point, distance * count);
             }
         }
 
@@ -291,8 +303,18 @@ public class DoorConnector {
                 // 计算该点到门的距离
                 double distance = point.distance(door.getPoint());
                 // 如果距离小于10且可以从该点到达门，记录这个点
-                if (distance < 10 && canReach(point, door) && canReach(start, door)) {
-                    pointScores.put(point, start.distance(point)); // 仍然使用到起点的距离进行排序
+                int stepsToPoint = canReach(point, door);
+                if (distance < 15 && stepsToPoint >= 0) {
+                    // 远离因子
+                    int count = 1;
+                    for (Door sameRoomDoor : door.getRoom().getDoors()) {
+                        if (sameRoomDoor.equals(door)) continue;
+                        int stepsToDoor = canReach(point, sameRoomDoor, MAX_DISTANCE);
+                        if (stepsToDoor >= 0) {
+                            count += (MAX_DISTANCE - stepsToPoint);
+                        }
+                    }
+                    pointScores.put(point, start.distance(point) * count); // 仍然使用到起点的距离进行排序
                 }
             }
         }
@@ -303,17 +325,20 @@ public class DoorConnector {
                 .sorted(Map.Entry.comparingByValue())
                 .forEach(entry -> points.add(entry.getKey()));
 
+        if (points.isEmpty()) points.add(door.getPoint());
+
         return points;
     }
 
     /*
-    判断指定 Point 是否可以通过 result 中已有的 Point 连接到目标 Door
+    判断指定 Point 是否可以通过 result 中已有的 Point 连接到目标 Door，可以设置步数上限
+    返回值为步数，如果不可达则返回-1
      */
-    public boolean canReach(Point start, Door target) {
-        // 如果起点就是目标点，直接返回true
+    public int canReach(Point start, Door target, int limit) {
+        // 如果起点就是目标点，直接返回0（表示0步可达）
         Point targetPoint = target.getPoint();
         if (start.equals(targetPoint)) {
-            return true;
+            return 0;
         }
 
         // 使用BFS算法判断是否可达
@@ -325,30 +350,51 @@ public class DoorConnector {
 
         // 四个方向的移动：上、右、下、左
         int[][] directions = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        
+        // 记录搜索步数
+        int steps = 0;
 
-        while (!queue.isEmpty()) {
-            Point current = queue.poll();
+        while (!queue.isEmpty() && (limit <= 0 || steps < limit)) {
+            // 当前层的节点数
+            int levelSize = queue.size();
+            
+            // 处理当前层的所有节点
+            for (int i = 0; i < levelSize; i++) {
+                Point current = queue.poll();
 
-            // 检查四个方向
-            for (int[] dir : directions) {
-                int newX = current.x + dir[0];
-                int newY = current.y + dir[1];
-                Point newPoint = new Point(newX, newY);
+                // 检查四个方向
+                for (int[] dir : directions) {
+                    int newX = current.x + dir[0];
+                    int newY = current.y + dir[1];
+                    Point newPoint = new Point(newX, newY);
 
-                // 如果新点是目标点
-                if (newPoint.equals(targetPoint)) {
-                    return true;
-                }
+                    // 如果新点是目标点
+                    if (newPoint.equals(targetPoint)) {
+                        return steps + 1;  // 返回步数（当前步数+1）
+                    }
 
-                // 如果新点在result集合中且未访问过
-                if (result.contains(newPoint) && !visited.contains(newPoint)) {
-                    queue.add(newPoint);
-                    visited.add(newPoint);
+                    // 如果新点在result集合中且未访问过
+                    if (result.contains(newPoint) && !visited.contains(newPoint)) {
+                        queue.add(newPoint);
+                        visited.add(newPoint);
+                    }
                 }
             }
+            
+            // 当前层处理完毕，步数加1
+            steps++;
         }
 
-        // 如果遍历完所有可达点仍未找到目标点，则返回false
-        return false;
+        // 如果遍历完所有可达点仍未找到目标点，或者达到了步数限制，则返回-1表示不可达
+        return -1;
+    }
+    
+    /*
+    判断指定 Point 是否可以通过 result 中已有的 Point 连接到目标 Door，无步数限制
+    返回值为步数，如果不可达则返回-1
+     */
+    public int canReach(Point start, Door target) {
+        // 调用有限制参数的方法，传入0表示无限制
+        return canReach(start, target, 0);
     }
 }

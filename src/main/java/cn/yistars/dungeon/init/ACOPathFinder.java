@@ -10,7 +10,7 @@ public class ACOPathFinder {
 
     // ACO算法参数
     private static final int MAX_ITERATIONS = 100;     // 最大迭代次数
-    private static final int ANT_COUNT = 20;           // 蚂蚁数量
+    private static final int ANT_COUNT = 50;           // 蚂蚁数量
     private static final double EVAPORATION_RATE = 0.5; // 信息素蒸发率
     private static final double ALPHA = 1.0;          // 信息素重要程度
     private static final double BETA = 2.0;           // 启发式因子重要程度
