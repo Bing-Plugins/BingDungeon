@@ -16,9 +16,11 @@ public class DoorConnector {
     private final List<Door> allDoors = new ArrayList<>(); // 所有的门
     private final AStarPathFinder aStarPathFinder; // A*寻路算法
     private final ACOPathFinder acoPathFinder; // 蚁群优化算法
+    private final FinderType finderType;
 
-    public DoorConnector(ArrayList<Room> rooms) {
+    public DoorConnector(ArrayList<Room> rooms, FinderType finderType) {
         this.rooms = rooms;
+        this.finderType = finderType;
 
         // 初始化障碍物和门
         initObstaclesAndDoors();
@@ -145,13 +147,22 @@ public class DoorConnector {
         result.add(start);
         result.add(end);
 
-        // 先尝试使用A*算法
-        List<Point> path = aStarPathFinder.findPath(start, end);
+        List<Point> path = new ArrayList<>();
 
-        // 如果A*找不到路径或者路径较差，尝试蚁群算法
-        //if (path == null || path.isEmpty() || pathQualityBelowThreshold(path)) {
-            path = acoPathFinder.findPath(start, end);
-        //}
+        switch (finderType) {
+            case ACO:
+                path = acoPathFinder.findPath(start, end);
+                break;
+            case ASTAR:
+                path = aStarPathFinder.findPath(start, end);
+                break;
+            case auto:
+                path = aStarPathFinder.findPath(start, end);
+                if (path == null || path.isEmpty() || pathQualityBelowThreshold(path)) {
+                    path = acoPathFinder.findPath(start, end);
+                }
+                break;
+        }
 
         // 简化路径，去掉不必要的拐点
         path = simplifyPath(path);

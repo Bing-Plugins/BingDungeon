@@ -53,7 +53,7 @@ public class ACOPathFinder {
                 List<Point> path = buildAntPath(start, end, pheromones);
 
                 // 如果找到了有效路径
-                if (path != null && !path.isEmpty()) {
+                if (!path.isEmpty()) {
                     antPaths.add(path);
 
                     // 更新最佳路径

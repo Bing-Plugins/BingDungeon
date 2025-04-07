@@ -3,6 +3,7 @@ package cn.yistars.dungeon.arena;
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.arena.map.ArenaMap;
 import cn.yistars.dungeon.init.DoorConnector;
+import cn.yistars.dungeon.init.FinderType;
 import cn.yistars.dungeon.road.Road;
 import cn.yistars.dungeon.room.Room;
 import cn.yistars.dungeon.init.RectangleSeparator;
@@ -36,7 +37,7 @@ public class Arena {
         new BukkitRunnable() {
             @Override
             public void run() {
-                initWorld();
+                initWorld("");
             }
         }.runTaskAsynchronously(BingDungeon.instance);
 
@@ -104,19 +105,20 @@ public class Arena {
             public void run() {
                 initRoom();
                 spawnRoom();
+                pastingRoom();
                 initDoor();
-                connectDoor();
-                spawnRoad();
+                connectDoor(FinderType.ACO);
+                pastingRoad();
 
                 arenaMap.update();
             }
         }.runTaskAsynchronously(BingDungeon.instance);
     }
 
-    private void initWorld() {
+    private void initWorld(String code) {
         SlimeWorld mirrorWorld = ArenaManager.slimeWorld.clone(
                 BingDungeon.instance.getConfig().getString("mirror-world-id", "DungeonMirror-%timestamp%")
-                        .replace("%timestamp%", String.valueOf(System.currentTimeMillis()))
+                        .replace("%timestamp%", String.valueOf(System.currentTimeMillis())) + code
         );
         new BukkitRunnable() {
             @Override
@@ -149,19 +151,26 @@ public class Arena {
         // 分离算法
         RectangleSeparator separator = new RectangleSeparator(rooms);
         separator.separate();
+    }
+
+    private void pastingRoom() {
         // 粘贴
         for (Room room : rooms) {
             room.pasting(new BukkitWorld(this.world));
         }
     }
 
-    private void connectDoor() {
+    private void connectDoor(FinderType finderType) {
+        long startTime = System.currentTimeMillis();
+
         // A* 路径查找 + 蚁群算法
-        DoorConnector connector = new DoorConnector((ArrayList<Room>) rooms);
+        DoorConnector connector = new DoorConnector((ArrayList<Room>) rooms, finderType);
 
         // 连接所有门
         HashSet<Point> pathPoints = connector.getResult();
         System.out.println("路径点总数: " + pathPoints.size());
+        long endTime = System.currentTimeMillis();
+        System.out.println("用时: " + (endTime - startTime) + " 毫秒");
 
         for (Point point : pathPoints) {
             Road road = new Road(this);
@@ -260,7 +269,7 @@ public class Arena {
         return "空区域";
     }
 
-    private void spawnRoad() {
+    private void pastingRoad() {
         for (Road road : roads) {
             road.initFacing(this);
             road.pasting(BukkitAdapter.adapt(world));
