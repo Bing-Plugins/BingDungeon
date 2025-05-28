@@ -4,6 +4,7 @@ import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.arena.map.ArenaMap;
 import cn.yistars.dungeon.init.DoorConnector;
 import cn.yistars.dungeon.init.FinderType;
+import cn.yistars.dungeon.init.grid.GridGenerator;
 import cn.yistars.dungeon.road.Road;
 import cn.yistars.dungeon.room.Room;
 import cn.yistars.dungeon.init.RectangleSeparator;
@@ -12,8 +13,6 @@ import com.infernalsuite.asp.api.world.SlimeWorld;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import lombok.Getter;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -41,6 +40,7 @@ public class Arena {
             }
         }.runTaskAsynchronously(BingDungeon.instance);
 
+        /*
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -50,7 +50,7 @@ public class Arena {
                     }
                 }
             }
-        }.runTaskTimerAsynchronously(BingDungeon.instance, 0, 10);
+        }.runTaskTimerAsynchronously(BingDungeon.instance, 0, 10);*/
     }
 
     public void addPlayer(Player player) {
@@ -100,6 +100,7 @@ public class Arena {
     }
 
     private void nextStep() {
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -113,6 +114,27 @@ public class Arena {
                 arenaMap.update();
             }
         }.runTaskAsynchronously(BingDungeon.instance);
+        /*
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                randomRoad();
+                pastingRoad();
+            }
+        }.runTaskAsynchronously(BingDungeon.instance);*/
+    }
+
+    private void randomRoad() {
+        // 创建一个20x20的网格，生成100个点
+        GridGenerator gridGenerator = new GridGenerator();
+        // 获取生成的点
+        HashSet<Point> points = gridGenerator.getFinalGrid();
+
+        for (Point point : points) {
+            Road road = new Road(this);
+            road.setPosition(point.x, point.y);
+            roads.add(road);
+        }
     }
 
     private void initWorld(String code) {
