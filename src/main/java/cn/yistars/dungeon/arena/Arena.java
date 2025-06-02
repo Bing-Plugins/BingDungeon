@@ -100,7 +100,7 @@ public class Arena {
     }
 
     private void nextStep() {
-
+        /*
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -114,14 +114,14 @@ public class Arena {
                 arenaMap.update();
             }
         }.runTaskAsynchronously(BingDungeon.instance);
-        /*
+        */
         new BukkitRunnable() {
             @Override
             public void run() {
                 randomRoad();
                 pastingRoad();
             }
-        }.runTaskAsynchronously(BingDungeon.instance);*/
+        }.runTaskAsynchronously(BingDungeon.instance);
     }
 
     private void randomRoad() {
