@@ -1,14 +1,17 @@
 package cn.yistars.dungeon.init.grid;
 
+import cn.yistars.dungeon.BingDungeon;
 import lombok.Getter;
+import org.bukkit.configuration.ConfigurationSection;
 
 import java.awt.Point;
 import java.util.*;
 
-@Getter
 public class GridGenerator {
-    private final int GRID_RADIUS = 18; // 需要为偶数
+    private final ConfigurationSection config = Objects.requireNonNull(BingDungeon.instance.getConfig().getConfigurationSection("path-only"));
+    private final int GRID_RADIUS = config.getInt("grid-radius", 18); // 需要为偶数
     private final Random random = new Random();
+    @Getter
     private final HashSet<Point> finalGrid = new HashSet<>();
 
     public GridGenerator() {
@@ -84,7 +87,7 @@ public class GridGenerator {
      */
     public HashSet<GridPoint> randomlyRemovePoints(HashSet<GridPoint> originalGrid) {
         // 随机移除12.5%的类型为 a 的点
-        int pointsToRemove = (int) (originalGrid.size() * 0.125); // 移除30%的点
+        int pointsToRemove = (int) (originalGrid.size() * config.getDouble("random-remove-point-probability", 0.125));
         int removedCount = 0;
         ArrayList<GridPoint> points = new ArrayList<>(originalGrid);
         Collections.shuffle(points);
@@ -112,21 +115,26 @@ public class GridGenerator {
         }
 
         // 随机选择 12~36 个矩形区域
-        int rectCount = 24 + random.nextInt(24); // 随机选择 12 到 36 个矩形区域
+        int rectCount = config.getInt("random-remove-rectangle-min", 24) + random.nextInt(config.getInt("random-remove-rectangle-range", 24)); // 随机选择 12 到 36 个矩形区域
+        // 可选边长
+        List<Integer> rectSizes = config.getIntegerList("random-remove-rectangle-sizes");
+        // 除了绝对值为 1 的边长
+        ArrayList<Integer> validSizes = new ArrayList<>();
+        for (int size : rectSizes) if (Math.abs(size) != 1) validSizes.add(size);
+
         // 奇数点位
         for (int i = 0; i < rectCount; i++) {
             // 随机选择一个矩形区域的左上角点
             int x = -GRID_RADIUS + 2 * random.nextInt(GRID_RADIUS - 1);
             int y = -GRID_RADIUS + 2 * random.nextInt(GRID_RADIUS - 1);
-            // 随机矩形大小，最大为 3，最小 -3
-            int rectSizeX = (1 + 2 * random.nextInt(2)) * (random.nextBoolean() ? 1 : -1);
+            // 随机矩形大小
+            int rectSizeX = rectSizes.get(random.nextInt(rectSizes.size()));
             int rectSizeY;
-            if (rectSizeX == -1 || rectSizeX == 1) {
-                // 如果是 -1 或 1，则 Y 也必须是 -1 或 1
-                rectSizeY = random.nextBoolean() ? 3 : -3;
+            // 如果 x 绝对值为 1，则随机选择一个有效的矩形大小
+            if (Math.abs(rectSizeX) == 1) {
+                rectSizeY = validSizes.get(random.nextInt(validSizes.size()));
             } else {
-                // 否则随机选择
-                rectSizeY = (1 + 2 * random.nextInt(2)) * (random.nextBoolean() ? 1 : -1);
+                rectSizeY = rectSizes.get(random.nextInt(rectSizes.size()));
             }
             System.out.println("随机矩形区域左上角: (" + x + ", " + y + "), 大小: (" + rectSizeX + ", " + rectSizeY + ")");
             // 设置点位为 o
@@ -149,7 +157,7 @@ public class GridGenerator {
         }
 
         // 随机选择 4~8
-        int edgeCount = 4 + random.nextInt(4); // 随机选择 4 到 8 个矩形区域
+        int edgeCount = config.getInt("random-remove-edge-rectangle-min", 4) + random.nextInt(config.getInt("random-remove-edge-rectangle-range", 4)); // 随机选择 4 到 8 个矩形区域
 
         ArrayList<DirectionType> directions = new ArrayList<>(Arrays.asList(DirectionType.values()));
 

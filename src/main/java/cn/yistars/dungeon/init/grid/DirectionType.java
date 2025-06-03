@@ -1,11 +1,15 @@
 package cn.yistars.dungeon.init.grid;
 
+import cn.yistars.dungeon.BingDungeon;
+
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 
 public enum DirectionType {
-    UP, // 左上=
+    UP, // 上
     DOWN, // 下
     LEFT, // 左
     RIGHT; // 右
@@ -13,11 +17,20 @@ public enum DirectionType {
     public HashSet<Point> getRandomRegion(Random random, int grid_radius) {
         HashSet<Point> region = new HashSet<>();
 
-        // 随机矩形大小，最大为 5，最小 1
-        int rectSizeX = 1 + 2 * random.nextInt(2);
-        int rectSizeY = 1 + 2 * random.nextInt(2);
-        if (rectSizeX == 1) {
-            rectSizeY = 3 + 2 * random.nextInt(1);
+        // 可选边长
+        List<Integer> rectSizes = BingDungeon.instance.getConfig().getIntegerList("path-only.random-remove-edge-rectangle-sizes");
+        // 除了绝对值为 1 的边长
+        ArrayList<Integer> validSizes = new ArrayList<>();
+        for (int size : rectSizes) if (Math.abs(size) != 1) validSizes.add(size);
+
+        // 随机矩形大小
+        int rectSizeX = rectSizes.get(random.nextInt(rectSizes.size()));
+        int rectSizeY;
+        // 如果 x 绝对值为 1，则随机选择一个有效的矩形大小
+        if (Math.abs(rectSizeX) == 1) {
+            rectSizeY = validSizes.get(random.nextInt(validSizes.size()));
+        } else {
+            rectSizeY = rectSizes.get(random.nextInt(rectSizes.size()));
         }
 
         switch (this) {

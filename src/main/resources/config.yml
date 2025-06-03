@@ -34,3 +34,20 @@ slime-database:
   database: gamemap
   use-ssl: false
   sql-url: jdbc:mysql://{host}:{port}/{database}?autoReconnect=true&allowMultiQueries=true&useSSL={usessl}
+
+# 纯路径地图生成配置
+path-only:
+  # 矩形半径，尽量为偶数
+  grid-radius: 18
+  # step1. 随机移除网格中的非交叉点的概率，取值范围 [0,1]
+  random-remove-point-probability: 0.125
+  # step2-1. 随机移除矩形区域的个数
+  random-remove-rectangle-min: 24 # 最小值
+  random-remove-rectangle-range: 24 # 最小值额外的随机个数最大值
+  # step2-1. 随机移除矩形区域的边长
+  random-remove-rectangle-sizes: [ -3, -1, 1, 3 ] # 边长的范围，尽量为奇数
+  # step2-2. 随机移除靠边缘的矩形区域的个数
+  random-remove-edge-rectangle-min: 12 # 最小值
+  random-remove-edge-rectangle-range: 12 # 最小值额外的随机个数最大值
+  # step2-2. 随机移除靠边缘的矩形区域的边长
+  random-remove-edge-rectangle-sizes: [ 1, 3, 5 ] # 边长的范围，尽量为奇数
