@@ -1,6 +1,7 @@
 package cn.yistars.dungeon.arena;
 
 import cn.yistars.dungeon.BingDungeon;
+import cn.yistars.dungeon.init.DebugStorage;
 import com.infernalsuite.asp.api.AdvancedSlimePaperAPI;
 import com.infernalsuite.asp.api.exceptions.CorruptedWorldException;
 import com.infernalsuite.asp.api.exceptions.NewerFormatException;
@@ -16,6 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.UUID;
 
 public class ArenaManager {
     public static HashSet<Arena> arenas = new HashSet<>();
@@ -73,7 +75,11 @@ public class ArenaManager {
     }
 
     public static Arena createArena() {
-        Arena arena = new Arena();
+        return createArena(new DebugStorage());
+    }
+
+    public static Arena createArena(DebugStorage debugStorage) {
+        Arena arena = new Arena(debugStorage);
         arenas.add(arena);
         return arena;
     }

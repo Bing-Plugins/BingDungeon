@@ -2,6 +2,7 @@ package cn.yistars.dungeon.arena;
 
 import cn.yistars.dungeon.BingDungeon;
 import cn.yistars.dungeon.arena.map.ArenaMap;
+import cn.yistars.dungeon.init.DebugStorage;
 import cn.yistars.dungeon.init.DoorConnector;
 import cn.yistars.dungeon.init.FinderType;
 import cn.yistars.dungeon.init.grid.GridGenerator;
@@ -25,6 +26,7 @@ import java.util.List;
 
 @Getter
 public class Arena {
+    private final DebugStorage debugStorage;
     private final List<Room> rooms = new ArrayList<>();
     private final List<Road> roads = new ArrayList<>();
     private final Integer initRadius = 5;
@@ -32,7 +34,9 @@ public class Arena {
     private final HashSet<Player> players = new HashSet<>();
     private final ArenaMap arenaMap = new ArenaMap(this);
 
-    public Arena() {
+    public Arena(DebugStorage debugStorage) {
+        this.debugStorage = debugStorage;
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -120,13 +124,15 @@ public class Arena {
             public void run() {
                 randomRoad();
                 pastingRoad();
+                debugStorage.finish();
             }
         }.runTaskAsynchronously(BingDungeon.instance);
     }
 
     private void randomRoad() {
         // 创建一个20x20的网格，生成100个点
-        GridGenerator gridGenerator = new GridGenerator();
+        GridGenerator gridGenerator = new GridGenerator(debugStorage);
+
         // 获取生成的点
         HashSet<Point> points = gridGenerator.getFinalGrid();
 
@@ -147,6 +153,8 @@ public class Arena {
             public void run() {
                 SlimeWorld mirror = ArenaManager.asp.loadWorld(mirrorWorld, true);
                 world = Bukkit.getWorld(mirror.getName());
+
+                debugStorage.setWorld(world);
 
                 nextStep();
             }

@@ -5,6 +5,7 @@ import cn.yistars.dungeon.arena.Arena;
 import cn.yistars.dungeon.arena.ArenaManager;
 import cn.yistars.dungeon.config.ConfigManager;
 import cn.yistars.dungeon.config.LangManager;
+import cn.yistars.dungeon.init.DebugStorage;
 import cn.yistars.dungeon.room.RoomType;
 import cn.yistars.dungeon.setup.SetupManager;
 import cn.yistars.dungeon.setup.SetupPlayer;
@@ -120,9 +121,11 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     return false;
                 }
             case "debug":
-                Arena arena = ArenaManager.createArena();
-                player = (Player) sender;
-                arena.addPlayer(player);
+                Arena arena = ArenaManager.createArena(new DebugStorage(sender));
+                if (sender instanceof Player) {
+                    player = (Player) sender;
+                    arena.addPlayer(player);
+                }
                 return true;
             default:
                 return false;

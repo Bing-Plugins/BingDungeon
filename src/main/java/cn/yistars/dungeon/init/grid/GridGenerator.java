@@ -1,35 +1,44 @@
 package cn.yistars.dungeon.init.grid;
 
 import cn.yistars.dungeon.BingDungeon;
+import cn.yistars.dungeon.init.DebugStorage;
 import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.awt.Point;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class GridGenerator {
+    private final DebugStorage debugStorage;
     private final ConfigurationSection config = Objects.requireNonNull(BingDungeon.instance.getConfig().getConfigurationSection("path-only"));
     private final int GRID_RADIUS = config.getInt("grid-radius", 18); // 需要为偶数
     private final Random random = new Random();
     @Getter
     private final HashSet<Point> finalGrid = new HashSet<>();
 
-    public GridGenerator() {
+    public GridGenerator(DebugStorage debugStorage) {
+        this.debugStorage = debugStorage;
+
         // 生成初始网状带孔结构
         HashSet<GridPoint> initialGrid = generateMeshWithHoles();
-        System.out.println("初始网格点数量: " + initialGrid.size());
+        // System.out.println("初始网格点数量: " + initialGrid.size());
+        debugStorage.setInitialGridCount(initialGrid.size());
 
         // 随机覆盖矩形
-        HashSet<GridPoint> rectangleGrid = removeRectangle(initialGrid);
-        System.out.println("移除矩形后网格点数量: " + rectangleGrid.size());
+        HashSet<GridPoint> rectangleRemovedGrid = removeRectangle(initialGrid);
+        // System.out.println("移除矩形后网格点数量: " + rectangleRemovedGrid.size());
+        debugStorage.setRectangleRemovedGridCount(rectangleRemovedGrid.size());
 
         // 随机挖去其中的 'a' 点
-        HashSet<GridPoint> removeGrid = randomlyRemovePoints(rectangleGrid);
-        System.out.println("最终网格点数量: " + removeGrid.size());
+        HashSet<GridPoint> removedAGrid = randomlyRemovePoints(rectangleRemovedGrid);
+        // System.out.println("最终网格点数量: " + removedAGrid.size());
+        debugStorage.setRemovedAGridCount(removedAGrid.size());
 
         // 移除不可达点位
-        HashSet<GridPoint> reachableGrid = removeUnreachablePoints(removeGrid);
-        System.out.println("可达网格点数量: " + reachableGrid.size());
+        HashSet<GridPoint> reachableGrid = removeUnreachablePoints(removedAGrid);
+        // System.out.println("可达网格点数量: " + reachableGrid.size());
+        debugStorage.setReachableGridCount(reachableGrid.size());
 
         for (GridPoint p : reachableGrid) {
             if (!p.getType().equals(PointType.O)) finalGrid.add(p.getPoint());
@@ -136,7 +145,8 @@ public class GridGenerator {
             } else {
                 rectSizeY = rectSizes.get(random.nextInt(rectSizes.size()));
             }
-            System.out.println("随机矩形区域左上角: (" + x + ", " + y + "), 大小: (" + rectSizeX + ", " + rectSizeY + ")");
+            // System.out.println("随机矩形区域左上角: (" + x + ", " + y + "), 大小: (" + rectSizeX + ", " + rectSizeY + ")");
+            debugStorage.getRectangleRemoved().add(new Rectangle(x, y, rectSizeX, rectSizeY));
             // 设置点位为 o
             for (int dx = rectSizeX; Math.abs(dx) > 0; dx = dx > 0 ? dx - 1 : dx + 1) {
                 for (int dy = rectSizeY; Math.abs(dy) > 0; dy = dy > 0 ? dy - 1 : dy + 1) {
@@ -151,7 +161,6 @@ public class GridGenerator {
                     GridPoint gridPoint = gridMap.get(point);
                     gridPoint.setType(PointType.O);
                     gridMap.put(point, gridPoint);
-                    System.out.println("<UNK>: (" + newX + ", " + newY + ")");
                 }
             }
         }
@@ -168,7 +177,6 @@ public class GridGenerator {
         for (DirectionType direction : directions) {
             // 获取随机区域
             HashSet<Point> region = direction.getRandomRegion(random, GRID_RADIUS);
-            System.out.println("随机区域: " + region);
             // 设置点位为 o
             for (Point point : region) {
                 // 确保点在网格范围内
